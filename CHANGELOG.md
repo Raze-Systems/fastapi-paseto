@@ -4,6 +4,19 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.2.0 (2026-03-09)
+
+### Features
+
+- **websocket**: Add websocket authorization support
+  ([`3e9103d`](https://github.com/Raze-Systems/fastapi-paseto/commit/3e9103dc5a0428dafd6beddf251cccc3d595b0c7))
+
+### Refactoring
+
+- **auth**: Modularize paseto internals
+  ([`db6e5d5`](https://github.com/Raze-Systems/fastapi-paseto/commit/db6e5d590100491a50b75d026dc28622c07d4c1c))
+
+
 ## v1.1.0 (2026-03-09)
 
 ### Features
