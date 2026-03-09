@@ -33,8 +33,9 @@ pip install fastapi-paseto
 ```
 
 Releases are built from GitHub Actions after a successful semantic release on
-`master`. If you consume the package from the repository's GitHub Packages
-index, configure your Python package index credentials before installing.
+`master`. Each release publishes the wheel and source distribution as GitHub
+workflow artifacts and as downloadable assets on the corresponding GitHub
+Release.
 
 `AuthPASETO.load_config()` now expects a callback that returns either a plain
 mapping or a `pydantic-settings` `BaseSettings` instance. A minimal setup looks
@@ -63,7 +64,8 @@ headers`.
 
 The release workflow runs tests, builds the package, builds the docs, creates
 the next semantic version, updates the generated changelog, publishes the
-distribution to GitHub Packages, and deploys the latest docs to GitHub Pages.
+distribution as GitHub Release assets and workflow artifacts, and deploys the
+latest docs to GitHub Pages.
 The first automated release should start from a bootstrap tag that matches the
 current project version.
 
