@@ -1,9 +1,18 @@
 # Changes
 
+## 2026-03-09T16:10:00-03:00
+
+- Renamed the published project from `fastapi-paseto-auth` to `fastapi-paseto`.
+- Renamed the import package from `fastapi_paseto_auth` to `fastapi_paseto` and updated examples, tests, and docs to match.
+- Repointed repository metadata, badges, and issue links to `Raze-Systems/fastapi-paseto`.
+- Updated package authorship to `Raze Systems` and `Alexandre Teles`, with `Alexandre Teles <1757773+alexandreteles@users.noreply.github.com>` as the maintainer.
+- Removed the old public documentation URL from package metadata and README.
+- Preserved the original MIT copyright notice and added fork copyright lines for the current project owners.
+
 ## 2026-03-09T15:03:11-03:00
 
 - Upgraded the runtime stack to `fastapi==0.135.1`, `pydantic==2.12.5`, and `pydantic-settings==2.12.0`; kept `pyseto==1.9.1` because it is already current and compatible.
-- Reworked config validation onto Pydantic v2 APIs in `src/fastapi_paseto_auth/config.py`, replacing v1 validators and `Config` usage with `field_validator`, `model_validator`, and `model_config`.
+- Reworked config validation onto Pydantic v2 APIs in `src/fastapi_paseto/config.py`, replacing v1 validators and `Config` usage with `field_validator`, `model_validator`, and `model_config`.
 - Changed `AuthPASETO.load_config()` to accept a callback returning either a plain mapping or a `pydantic-settings` `BaseSettings` instance; removed the old `list[tuple]`/generic Pydantic-object contract.
 - Fixed `AuthPASETO` dependency injection compatibility with modern FastAPI while preserving direct `AuthPASETO()` construction for tests and non-request token creation.
 - Removed mutable default arguments from token creation methods and tightened related typing in the auth implementation.
@@ -24,14 +33,14 @@
 
 ## 2026-03-09T02:46:38-03:00
 
-- Moved the `fastapi_paseto_auth` package into `src/fastapi_paseto_auth` to match `uv_build`'s default packaged-library layout while preserving the public import path.
+- Moved the `fastapi_paseto` package into `src/fastapi_paseto` to match `uv_build`'s default packaged-library layout while preserving the public import path.
 - Removed the flat-layout override from `pyproject.toml` so the build now follows the default `src/` module discovery behavior.
 - Replaced the published `test`, `doc`, and `dev` extras with a single local `dev` dependency group in `pyproject.toml`.
 - Updated `docs/contributing.md` to use `uv sync --python 3.14` for the default contributor setup and `uv sync --python 3.14 --no-dev` for a production-like local environment.
 - Updated the GitHub Actions test and docs workflows to install dependencies with `uv sync --python 3.14` so CI follows the new dependency-group layout.
 - Regenerated `uv.lock` so it records the new `dev` dependency group instead of published extras metadata.
 - Verified that `uv lock`, `uv build`, `uv sync --python 3.14`, `uv sync --python 3.14 --no-dev`, and `uv run --python 3.14 mkdocs build --strict` all succeed after the restructure.
-- Verified that `uv run --python 3.14 python -c "import fastapi_paseto_auth; print(fastapi_paseto_auth.__file__)"` resolves to the package under `src/`.
+- Verified that `uv run --python 3.14 python -c "import fastapi_paseto; print(fastapi_paseto.__file__)"` resolves to the package under `src/`.
 - Rechecked the test suite and confirmed the remaining hang still occurs in `tests/test_config.py::test_secret_key_not_exist`, so there is no new packaging-specific regression identified from this restructure.
 
 ## 2026-03-09T03:10:00-03:00
@@ -53,7 +62,7 @@
 
 - Migrated packaging metadata in `pyproject.toml` from `flit` tables to PEP 621 `[project]` metadata.
 - Switched the build backend from `flit_core` to `uv_build`.
-- Moved the package version source of truth to `pyproject.toml` and updated `fastapi_paseto_auth.__version__` to read from installed package metadata with a fallback to `0.6.0`.
+- Moved the package version source of truth to `pyproject.toml` and updated `fastapi_paseto.__version__` to read from installed package metadata with a fallback to `0.6.0`.
 - Removed the legacy `Pipfile` and `Pipfile.lock`.
 - Added `.python-version` with `3.10` so local `uv` workflows resolve the intended interpreter by default.
 - Generated and added `uv.lock` for the `uv`-managed development environment.

@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from pydantic_settings import BaseSettings
 from pyseto import Token
 
-from fastapi_paseto_auth.config import LoadConfig
+from fastapi_paseto.config import LoadConfig
 
 
 class AuthConfig:

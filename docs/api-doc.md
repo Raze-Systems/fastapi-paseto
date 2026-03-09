@@ -1,6 +1,6 @@
 In here you will find the API for everything exposed in this extension.
 
-### Configuring FastAPI PASETO Auth
+### Configuring FastAPI PASETO
 
 **load_config**(callback):
     This decorator sets the callback function to overwrite state on AuthPASETO class so

@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
-from fastapi_paseto_auth import AuthPASETO
-from fastapi_paseto_auth.exceptions import AuthPASETOException
+from fastapi_paseto import AuthPASETO
+from fastapi_paseto.exceptions import AuthPASETOException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -51,7 +51,7 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # Custom documentation fastapi-paseto-auth
+    # Custom documentation for fastapi-paseto
     headers = {
         "name": "Authorization",
         "in": "header",

@@ -3,8 +3,8 @@ import os
 
 import pytest, pyseto
 from pyseto import Key
-from fastapi_paseto_auth import AuthPASETO
-from fastapi_paseto_auth.exceptions import AuthPASETOException
+from fastapi_paseto import AuthPASETO
+from fastapi_paseto.exceptions import AuthPASETOException
 from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient

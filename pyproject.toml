@@ -3,14 +3,18 @@ requires = ["uv_build>=0.10.7,<0.11.0"]
 build-backend = "uv_build"
 
 [project]
-name = "fastapi-paseto-auth"
+name = "fastapi-paseto"
 version = "0.6.0"
 description = "FastAPI extension that provides PASETO Auth support"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
 authors = [
-  { name = "Neneko", email = "fastapi@nyu.moe" }
+  { name = "Raze Systems" },
+  { name = "Alexandre Teles", email = "1757773+alexandreteles@users.noreply.github.com" }
+]
+maintainers = [
+  { name = "Alexandre Teles", email = "1757773+alexandreteles@users.noreply.github.com" }
 ]
 classifiers = [
   "Environment :: Web Environment",
@@ -30,8 +34,8 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://chloe-ko.github.io/fastapi-paseto-auth/"
-Source = "https://github.com/Chloe-ko/fastapi-paseto-auth"
+Source = "https://github.com/Raze-Systems/fastapi-paseto"
+Issues = "https://github.com/Raze-Systems/fastapi-paseto/issues"
 
 [dependency-groups]
 dev = [

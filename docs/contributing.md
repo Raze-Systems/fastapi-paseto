@@ -1,10 +1,8 @@
 ## Sharing feedback
 
-This project is still relatively new and probably has flaws, both in terms of internal usability as well as code quality.\
-I have tried my best to however make sure that it is as secure as it can be.\
-I also do not yet have a complete understanding of the project, especially the CI/CD and tests. If you find something I missed to adjust, please feel free to let me know.
+If you find a bug, a security issue, or an area that could be improved, please open an issue or send a pull request.
 
-If you have suggestions for improvements or want to help, feel free to <a href="https://github.com/Chloe-ko/fastapi-paseto-auth/issues/new" target="_blank">open an issue</a> or create a PR with your modifications.
+If you have suggestions for improvements or want to help, feel free to <a href="https://github.com/Raze-Systems/fastapi-paseto/issues/new" target="_blank">open an issue</a> or create a PR with your modifications.
 
 ## Developing
 
@@ -35,9 +33,9 @@ If you want a production-like local environment without the development tools, r
 $ uv sync --python 3.14 --no-dev
 ```
 
-**Using your local FastAPI PASETO Auth**
+**Using your local FastAPI PASETO**
 
-If you create a Python file that imports and uses FastAPI PASETO Auth, and run it with `uv run` from the project root, it will use your local FastAPI PASETO Auth source code. `uv sync` installs the project as editable by default, so source changes are immediately reflected without reinstalling.
+If you create a Python file that imports and uses FastAPI PASETO, and run it with `uv run` from the project root, it will use your local FastAPI PASETO source code. `uv sync` installs the project as editable by default, so source changes are immediately reflected without reinstalling.
 
 That way, you don't have to reinstall your local version to test every change.
 

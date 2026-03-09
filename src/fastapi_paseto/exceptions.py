@@ -1,6 +1,6 @@
 class AuthPASETOException(Exception):
     """
-    Base except which all fastapi_paseto_auth errors extend
+    Base exception which all fastapi_paseto errors extend
     """
 
     def __init__(self, status_code: int, message: str, **kwargs):

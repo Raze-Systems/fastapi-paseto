@@ -1,16 +1,16 @@
 <h1 align="left" style="margin-bottom: 20px; font-weight: 500; font-size: 50px; color: black;">
-  FastAPI PASETO Auth
+  FastAPI PASETO
 </h1>
 
-![Tests](https://github.com/Chloe-ko/fastapi-paseto-auth/workflows/Tests/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/Chloe-ko/fastapi-paseto-auth/badge.svg?branch=master)](https://coveralls.io/github/Chloe-ko/fastapi-paseto-auth?branch=master)
-[![PyPI version](https://badge.fury.io/py/fastapi-paseto-auth.svg)](https://badge.fury.io/py/fastapi-paseto-auth)
-[![Downloads](https://static.pepy.tech/personalized-badge/fastapi-paseto-auth?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/fastapi-paseto-auth)
+[![Tests](https://github.com/Raze-Systems/fastapi-paseto/actions/workflows/tests.yml/badge.svg)](https://github.com/Raze-Systems/fastapi-paseto/actions/workflows/tests.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Raze-Systems/fastapi-paseto/badge.svg?branch=master)](https://coveralls.io/github/Raze-Systems/fastapi-paseto?branch=master)
+[![PyPI version](https://badge.fury.io/py/fastapi-paseto.svg)](https://badge.fury.io/py/fastapi-paseto)
+[![Downloads](https://static.pepy.tech/personalized-badge/fastapi-paseto?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/fastapi-paseto)
 ---
 
-**Documentation**: <a href="https://chloe-ko.github.io/fastapi-paseto-auth" target="_blank">https://chloe-ko.github.io/fastapi-paseto-auth</a>
+**Source Code**: <a href="https://github.com/Raze-Systems/fastapi-paseto" target="_blank">https://github.com/Raze-Systems/fastapi-paseto</a>
 
-**Source Code**: <a href="https://github.com/Chloe-ko/fastapi-paseto-auth" target="_blank">https://github.com/Chloe-ko/fastapi-paseto-auth</a>
+**Maintained by**: Raze Systems and Alexandre Teles
 
 ---
 
@@ -33,7 +33,7 @@ The easiest way to start working with this extension with pip
 This project currently targets Python 3.14+.
 
 ```bash
-pip install fastapi-paseto-auth
+pip install fastapi-paseto
 ```
 
 `AuthPASETO.load_config()` now expects a callback that returns either a plain
@@ -51,10 +51,9 @@ def get_config():
 
 ## FAQ
 - **Where's support for tokens in cookies?**\
-I mostly forked fastapi-jwt-auth because I needed a library to use for authentication using PASETO tokens in my private FastAPI Application. Which is why I only kept the functionality that I personally required.\
-Personally, I'm not a fan of saving data in cookies, and cookie support made up a big part of the code which just didn't make sense for me to bother adapting.\
-Hence, I likely will not be implementing support for storing PASETO tokens in cookies unless there is a considerable amount of people wanting it.\
-However, I will gladly accept PRs implementing tokens in cookies if someone else wants to implement it.
+This project focuses on header-based PASETO authentication and only includes the features required for that workflow.\
+Cookie storage is intentionally out of scope for now because it adds a large amount of behavior that does not fit the current design.\
+If there is strong demand and a solid implementation, contributions adding cookie support can still be considered.
 
 ## License
 This project is licensed under the terms of the MIT license.

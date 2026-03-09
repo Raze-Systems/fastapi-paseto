@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from pydantic_settings import BaseSettings
 from pyseto import Key
 
-from fastapi_paseto_auth import AuthPASETO
+from fastapi_paseto import AuthPASETO
 
 
 @pytest.fixture(scope="function")

@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from fastapi_paseto_auth import AuthPASETO
+from fastapi_paseto import AuthPASETO
 
 
 _AUTHPASETO_DEFAULTS: dict[str, object] = {

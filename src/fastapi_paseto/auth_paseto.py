@@ -10,8 +10,8 @@ from fastapi import Depends, Request, Response
 from pyseto import Key, Paseto, Token
 from pyseto.exceptions import DecryptError, SignError, VerifyError
 
-from fastapi_paseto_auth.auth_config import AuthConfig
-from fastapi_paseto_auth.exceptions import (
+from fastapi_paseto.auth_config import AuthConfig
+from fastapi_paseto.exceptions import (
     AccessTokenRequired,
     FreshTokenRequired,
     InvalidHeaderError,
