@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-03-09T16:08:41-03:00
+
+- Reworked `.github/workflows/pages.yml` to deploy GitHub Pages through the official artifact-based Actions flow instead of `mkdocs gh-deploy`.
+- Added the required Pages workflow permissions and split docs publishing into a `build` job plus a gated `deploy` job for pushes to `master`.
+- Kept the MkDocs build unchanged and verified that `uv run --python 3.14 mkdocs build --strict` still succeeds and produces the `site/` artifact used for deployment.
+
 ## 2026-03-09T16:10:00-03:00
 
 - Renamed the published project from `fastapi-paseto-auth` to `fastapi-paseto`.
