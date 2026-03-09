@@ -4,14 +4,14 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   validate:
@@ -45,7 +45,7 @@ jobs:
         run: uv run --python 3.14 coveralls --service=github
 
   release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-latest
     permissions:
@@ -231,7 +231,7 @@ jobs:
           gh attestation verify "./$wheel_name" --repo "$GITHUB_REPOSITORY" --signer-workflow .github/workflows/release.yml --predicate-type https://spdx.dev/Document/v2.3
           \`\`\`
 
-          Install from Git with an immutable ref, not \`master\`. Example:
+          Install from Git with an immutable ref, not \`main\`. Example:
 
           \`\`\`bash
           pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@$RELEASE_TAG"

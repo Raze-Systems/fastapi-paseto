@@ -85,7 +85,7 @@ This command generates a directory `./htmlcov/`, if you open the file `./htmlcov
 
 ## Releases
 
-Releases are automated from `master` with Conventional Commits and
+Releases are automated from `main` with Conventional Commits and
 `python-semantic-release`.
 
 Use commit messages like:

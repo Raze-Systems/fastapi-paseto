@@ -63,7 +63,7 @@ version_toml = ["pyproject.toml:project.version"]
 version_variables = ["src/fastapi_paseto/_version.py:__version__"]
 
 [tool.semantic_release.branches.main]
-match = "master"
+match = "main"
 prerelease = false
 
 [tool.semantic_release.changelog]

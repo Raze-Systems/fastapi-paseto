@@ -40,7 +40,7 @@ pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto
 pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@<commit-sha>"
 ```
 
-Avoid installs from `master`. A mutable branch reference can change after you
+Avoid installs from `main`. A mutable branch reference can change after you
 install it, which makes later verification weak even if the branch tip was
 signed at the time.
 

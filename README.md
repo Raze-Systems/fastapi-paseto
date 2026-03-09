@@ -34,7 +34,7 @@ pip install fastapi-paseto
 ```
 
 Releases are built from GitHub Actions after a successful semantic release on
-`master`. Each release publishes the wheel and source distribution as GitHub
+`main`. Each release publishes the wheel and source distribution as GitHub
 workflow artifacts and as downloadable assets on the corresponding GitHub
 Release.
 
@@ -56,7 +56,7 @@ If there is strong demand and a solid implementation, contributions adding cooki
 
 ## Release Process
 Releases are automated with conventional commits and semantic versioning.
-Commits merged into `master` should follow the Conventional Commits format, for
+Commits merged into `main` should follow the Conventional Commits format, for
 example `feat: add denylist cache metrics` or `fix: reject malformed token
 headers`.
 
@@ -83,7 +83,7 @@ gh attestation verify ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-System
 ```
 
 If you install directly from Git, pin an immutable tag or commit hash instead
-of `master`:
+of `main`:
 
 ```bash
 pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@vX.Y.Z"
