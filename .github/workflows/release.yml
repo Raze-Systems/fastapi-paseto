@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14
       - name: Test
         run: bash scripts/tests.sh
       - name: Build docs
@@ -58,7 +58,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14
       - name: Configure git author
         run: |
           git config user.name "github-actions[bot]"
@@ -133,7 +133,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14
       - name: Build package
         run: uv build
       - name: Install Twine
@@ -162,7 +162,7 @@ jobs:
           python-version: "3.14"
       - uses: actions/configure-pages@v5
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14
       - name: Build docs
         run: uv run --python 3.14 mkdocs build --strict
       - name: Upload Pages artifact
