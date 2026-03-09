@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.2.1 (2026-03-09)
+
+### Bug Fixes
+
+- **repo**: Update branch references to main
+  ([`8de8ec6`](https://github.com/Raze-Systems/fastapi-paseto/commit/8de8ec69aeec9ade7b7cadd628be33dee8223fb9))
+
+
 ## v1.2.0 (2026-03-09)
 
 ### Features
