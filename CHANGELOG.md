@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.0.3 (2026-03-09)
+
+### Bug Fixes
+
+- **ci**: Publish Python distributions as
+  ([`ddac7dd`](https://github.com/Raze-Systems/fastapi-paseto/commit/ddac7ddbb629b0c034679c69658886b009382262))
+
+
 ## v1.0.2 (2026-03-09)
 
 ### Bug Fixes
