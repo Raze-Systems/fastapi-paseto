@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.0.0 (2026-03-09)
+
+### Bug Fixes
+
+- **ci**: Build package outside semantic-
+  ([`01dcd39`](https://github.com/Raze-Systems/fastapi-paseto/commit/01dcd39c468eed3cf9e0f4e7d16f056ef36de8e9))
+
+
 ## Historical notes
 
 The entries below predate the automated semantic-release workflow.
