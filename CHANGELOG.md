@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.0.2 (2026-03-09)
+
+### Bug Fixes
+
+- **ci**: Use default uv sync in release workflow
+  ([`a479187`](https://github.com/Raze-Systems/fastapi-paseto/commit/a479187cd42e09abf921ac9633fe1c10ba6f4c7b))
+
+
 ## v1.0.1 (2026-03-09)
 
 ### Bug Fixes
