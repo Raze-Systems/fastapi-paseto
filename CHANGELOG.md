@@ -1,4 +1,12 @@
-# Changes
+# Changelog
+
+This file is generated from conventional commits by semantic-release.
+
+<!-- version list -->
+
+## Historical notes
+
+The entries below predate the automated semantic-release workflow.
 
 ## 2026-03-09T16:08:41-03:00
 

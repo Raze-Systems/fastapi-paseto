@@ -46,6 +46,36 @@ dev = [
   "mkdocs>=1.1.2,<2.0.0",
   "mkdocs-material>=8.3.9,<9.0.0",
   "markdown-include>=0.7.0,<0.8.0",
-  "uvicorn>=0.11.5"
+  "uvicorn>=0.11.5",
+  "python-semantic-release==10.4.1",
 ]
+
+[tool.semantic_release]
+build_command = """
+uv build
+uv run --python 3.14 mkdocs build --strict
+"""
+commit_message = "chore(release): v{version}"
+commit_parser = "conventional"
+tag_format = "v{version}"
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/fastapi_paseto/_version.py:__version__"]
+
+[tool.semantic_release.branches.main]
+match = "master"
+prerelease = false
+
+[tool.semantic_release.changelog]
+mode = "update"
+insertion_flag = "<!-- version list -->"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+output_format = "md"
+
+[tool.semantic_release.commit_parser_options]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+parse_squash_commits = true
+ignore_merge_commits = true
 

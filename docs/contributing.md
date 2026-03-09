@@ -82,3 +82,40 @@ $ bash scripts/tests.sh
 If you prefer to invoke the tools directly instead of using the helper scripts, use `uv run`, for example `uv run --python 3.14 pytest -v` or `uv run --python 3.14 mkdocs serve -a 0.0.0.0:5000`.
 
 This command generates a directory `./htmlcov/`, if you open the file `./htmlcov/index.html` in your browser, you can explore interactively the regions of code that are covered by the tests, and notice if there is any region missing.
+
+## Releases
+
+Releases are automated from `master` with Conventional Commits and
+`python-semantic-release`.
+
+Use commit messages like:
+
+```text
+feat: add support for custom token audiences
+fix: reject expired refresh tokens earlier
+perf: avoid reloading configuration per request
+```
+
+Only `feat` commits trigger a minor version bump. `fix` and `perf` trigger a
+patch bump. Breaking changes should be marked with `!` or a `BREAKING CHANGE:`
+footer so semantic-release can create a major bump.
+
+The release workflow only publishes when validation succeeds:
+
+- tests must pass
+- `uv build` must pass
+- `uv run --python 3.14 mkdocs build --strict` must pass
+
+The workflow updates `pyproject.toml`, stamps the package fallback version in
+`src/fastapi_paseto/_version.py`, regenerates `CHANGELOG.md`, creates the Git
+tag and GitHub release, uploads the distributions with Twine, and deploys the
+latest documentation to GitHub Pages.
+
+This repository currently has release tags through `v0.5.4`, while the project
+metadata is already at `0.6.0`. Before relying on the automated release job,
+create and push a bootstrap tag that matches the current version:
+
+```bash
+git tag v0.6.0
+git push origin v0.6.0
+```
