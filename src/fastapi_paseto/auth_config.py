@@ -11,6 +11,7 @@ from fastapi_paseto.config import LoadConfig
 
 _CONFIG_ATTRIBUTE_MAP: tuple[tuple[str, str], ...] = (
     ("_token_location", "authpaseto_token_location"),
+    ("_websocket_token_location", "authpaseto_websocket_token_location"),
     ("_secret_key", "authpaseto_secret_key"),
     ("_public_key", "authpaseto_public_key"),
     ("_private_key", "authpaseto_private_key"),
@@ -26,6 +27,8 @@ _CONFIG_ATTRIBUTE_MAP: tuple[tuple[str, str], ...] = (
     ("_header_type", "authpaseto_header_type"),
     ("_json_key", "authpaseto_json_key"),
     ("_json_type", "authpaseto_json_type"),
+    ("_websocket_query_key", "authpaseto_websocket_query_key"),
+    ("_websocket_query_type", "authpaseto_websocket_query_type"),
     ("_access_token_expires", "authpaseto_access_token_expires"),
     ("_refresh_token_expires", "authpaseto_refresh_token_expires"),
     ("_other_token_expires", "authpaseto_other_token_expires"),
@@ -38,6 +41,7 @@ class AuthConfig:
     _token: str | None = None
     _token_parts: list[str] = []
     _token_location: list[str] | tuple[str, ...] = ("headers",)
+    _websocket_token_location: list[str] | tuple[str, ...] = ("headers",)
     _current_user: str | int | None = None
     _decoded_token: Token | None = None
 
@@ -56,6 +60,8 @@ class AuthConfig:
     _header_type: str | None = "Bearer"
     _json_key: str = "access_token"
     _json_type: str | None = None
+    _websocket_query_key: str = "token"
+    _websocket_query_type: str | None = None
     _token_in_denylist_callback: Callable[..., bool] | None = None
     _access_token_expires = timedelta(minutes=15)
     _refresh_token_expires = timedelta(days=30)

@@ -32,3 +32,14 @@
 `authpaseto_refresh_token_expires`
 :   How long an refresh token should live before it expires. This takes value `integer` *(seconds)* or
     `datetime.timedelta`, and defaults to **30 days**. Can be set to `False` to disable expiration.
+
+`authpaseto_websocket_token_location`
+:   Where websocket handlers should look for tokens during the handshake. Valid values are
+    `headers` and `query`. Defaults to `("headers",)`.
+
+`authpaseto_websocket_query_key`
+:   The query parameter name used when websocket query transport is enabled. Defaults to `token`.
+
+`authpaseto_websocket_query_type`
+:   Optional prefix to require in the websocket query parameter, similar to `authpaseto_header_type`.
+    Defaults to `None`.

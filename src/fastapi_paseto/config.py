@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator, mod
 _ALLOWED_SEQUENCE_VALUES: dict[str, set[str]] = {
     "authpaseto_denylist_token_checks": {"access", "refresh"},
     "authpaseto_token_location": {"headers", "json"},
+    "authpaseto_websocket_token_location": {"headers", "query"},
 }
 
 _SEQUENCE_ERROR_MESSAGES: dict[str, str] = {
@@ -16,6 +17,9 @@ _SEQUENCE_ERROR_MESSAGES: dict[str, str] = {
     ),
     "authpaseto_token_location": (
         "The 'authpaseto_token_location' must be between 'headers' or 'json'"
+    ),
+    "authpaseto_websocket_token_location": (
+        "The 'authpaseto_websocket_token_location' must be between 'headers' or 'query'"
     ),
 }
 
@@ -34,6 +38,7 @@ class LoadConfig(BaseModel):
     model_config = ConfigDict(strict=True, str_min_length=1, str_strip_whitespace=True)
 
     authpaseto_token_location: list[str] | tuple[str, ...] = ("headers",)
+    authpaseto_websocket_token_location: list[str] | tuple[str, ...] = ("headers",)
     authpaseto_secret_key: str | None = None
     authpaseto_public_key: str | None = None
     authpaseto_public_key_file: str | None = None
@@ -52,8 +57,10 @@ class LoadConfig(BaseModel):
     )
     authpaseto_header_name: str = "Authorization"
     authpaseto_json_key: str = "access_token"
+    authpaseto_websocket_query_key: str = "token"
     authpaseto_header_type: str | None = "Bearer"
     authpaseto_json_type: str | None = None
+    authpaseto_websocket_query_type: str | None = None
     authpaseto_access_token_expires: bool | int | timedelta = timedelta(minutes=15)
     authpaseto_refresh_token_expires: bool | int | timedelta = timedelta(days=30)
     authpaseto_other_token_expires: bool | int | timedelta = timedelta(days=30)
@@ -61,6 +68,7 @@ class LoadConfig(BaseModel):
     @field_validator(
         "authpaseto_denylist_token_checks",
         "authpaseto_token_location",
+        "authpaseto_websocket_token_location",
         mode="after",
     )
     @classmethod

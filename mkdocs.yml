@@ -33,6 +33,7 @@ nav:
   - About: index.md
   - Usage:
     - Basic Usage: usage/basic.md
+    - WebSocket Usage: usage/websocket.md
     - Partially Protecting: usage/optional.md
     - Refresh Tokens: usage/refresh.md
     - Freshness Tokens: usage/freshness.md

@@ -2,15 +2,23 @@
 
 from json import JSONDecodeError
 
-from fastapi import Request
+from fastapi import Request, WebSocket
 
 from fastapi_paseto.exceptions import InvalidHeaderError
 
 
-async def get_request_json(request: Request) -> dict[str, object]:
-    """Return the request body as JSON or an empty mapping on decode errors."""
+async def get_request_json(
+    request: Request = None,
+    websocket: WebSocket = None,
+) -> dict[str, object]:
+    """Return HTTP request JSON bodies and an empty mapping for websockets."""
+
+    if websocket is not None:
+        return {}
 
     try:
+        if request is None:  # pragma: no cover
+            return {}
         return await request.json()
     except JSONDecodeError:
         return {}

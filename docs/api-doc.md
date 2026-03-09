@@ -20,7 +20,7 @@ In here you will find the API for everything exposed in this extension.
 #
 ### Protected Endpoint
 
-**paseto_required**(optional: bool = False, fresh: bool = False, refresh_token: bool = False, type: str = access, base64_encoded: bool = False):
+**paseto_required**(optional: bool = False, fresh: bool = False, refresh_token: bool = False, type: str = access, base64_encoded: bool = False, location = None, token_key = None, token_prefix = None, token = None):
 
     If you call this function, it will ensure that the requester has a valid access token before
     executing the code below your router. Depending on set options, it might not raise an exception even if the check fails.*
@@ -32,7 +32,14 @@ In here you will find the API for everything exposed in this extension.
         **refresh_token**: If set to True, checks for a refresh token instead of an access token.
         **type**: If set to a string, this gets checked against the type of the token provided. Used for custom types other than access or refresh tokens.
         **base64_encoded**: Whether the token to check is base64 encoded.
+        **location**: Override the configured token location for this endpoint. HTTP supports `headers` and `json`; websocket handlers support `headers` and `query`.
+        **token_key**: Override the configured header name, JSON key, or websocket query key for this check.
+        **token_prefix**: Override the configured transport prefix such as `Bearer`.
+        **token**: Provide a raw token directly and bypass request/websocket transport lookup.
     * Returns: None
+
+    For websocket handlers, call **paseto_required()** before `accept()`. Auth failures close
+    the connection with websocket close code `1008` and use the auth error message as the close reason.
 
 
 

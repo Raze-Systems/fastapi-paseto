@@ -29,6 +29,7 @@ def client():
 def test_default_config():
     assert AuthPASETO._token is None
     assert AuthPASETO._token_location == ("headers",)
+    assert AuthPASETO._websocket_token_location == ("headers",)
     assert AuthPASETO._current_user is None
     assert AuthPASETO._decoded_token is None
     assert AuthPASETO._secret_key is None
@@ -44,6 +45,8 @@ def test_default_config():
     assert AuthPASETO._token_in_denylist_callback is None
     assert AuthPASETO._header_name == "Authorization"
     assert AuthPASETO._header_type == "Bearer"
+    assert AuthPASETO._websocket_query_key == "token"
+    assert AuthPASETO._websocket_query_type is None
 
     assert AuthPASETO._access_token_expires.__class__ == timedelta
     assert int(AuthPASETO._access_token_expires.total_seconds()) == 900
@@ -135,6 +138,7 @@ def test_load_env_from_outside():
     # correct data
     class Settings(BaseSettings):
         authpaseto_token_location: list[str] = ["headers"]
+        authpaseto_websocket_token_location: list[str] = ["query"]
         authpaseto_secret_key: str = "testing"
         authpaseto_public_key: str = PUBLIC_KEY
         authpaseto_private_key: str = PRIVATE_KEY
@@ -148,6 +152,8 @@ def test_load_env_from_outside():
         authpaseto_denylist_enabled: bool = False
         authpaseto_header_name: str = "Auth-Token"
         authpaseto_header_type: str | None = None
+        authpaseto_websocket_query_key: str = "ws_token"
+        authpaseto_websocket_query_type: str | None = "Bearer"
         authpaseto_access_token_expires: timedelta = timedelta(minutes=2)
         authpaseto_refresh_token_expires: timedelta = timedelta(days=5)
 
@@ -156,6 +162,7 @@ def test_load_env_from_outside():
         return Settings()
 
     assert AuthPASETO._token_location == ["headers"]
+    assert AuthPASETO._websocket_token_location == ["query"]
     assert AuthPASETO._secret_key == "testing"
     assert AuthPASETO._public_key == PUBLIC_KEY
     assert AuthPASETO._private_key == PRIVATE_KEY
@@ -169,6 +176,8 @@ def test_load_env_from_outside():
     assert AuthPASETO._denylist_enabled is False
     assert AuthPASETO._header_name == "Auth-Token"
     assert AuthPASETO._header_type is None
+    assert AuthPASETO._websocket_query_key == "ws_token"
+    assert AuthPASETO._websocket_query_type == "Bearer"
     assert AuthPASETO._access_token_expires == timedelta(minutes=2)
     assert AuthPASETO._refresh_token_expires == timedelta(days=5)
 
@@ -199,6 +208,21 @@ def test_load_env_from_outside():
         @AuthPASETO.load_config
         def get_invalid_token_location_value():
             return {"authpaseto_token_location": {"header"}}
+
+    with pytest.raises(ValidationError, match=r"authpaseto_websocket_token_location"):
+
+        @AuthPASETO.load_config
+        def get_invalid_websocket_token_location_type():
+            return {"authpaseto_websocket_token_location": 1}
+
+    with pytest.raises(
+        ValidationError,
+        match=r"authpaseto_websocket_token_location",
+    ):
+
+        @AuthPASETO.load_config
+        def get_invalid_websocket_token_location_value():
+            return {"authpaseto_websocket_token_location": ["json"]}
 
     with pytest.raises(ValidationError, match=r"authpaseto_secret_key"):
 
@@ -277,6 +301,18 @@ def test_load_env_from_outside():
         @AuthPASETO.load_config
         def get_invalid_header_type():
             return {"authpaseto_header_type": 1}
+
+    with pytest.raises(ValidationError, match=r"authpaseto_websocket_query_key"):
+
+        @AuthPASETO.load_config
+        def get_invalid_websocket_query_key():
+            return {"authpaseto_websocket_query_key": 1}
+
+    with pytest.raises(ValidationError, match=r"authpaseto_websocket_query_type"):
+
+        @AuthPASETO.load_config
+        def get_invalid_websocket_query_type():
+            return {"authpaseto_websocket_query_type": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_access_token_expires"):
 

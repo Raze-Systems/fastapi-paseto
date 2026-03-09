@@ -19,6 +19,7 @@ If you were familiar with flask-jwt-extended or fastapi-jwt-auth this extension 
 - Access tokens and refresh tokens
 - Freshness Tokens
 - Revoking Tokens
+- WebSocket authorization
 - Support for adding custom claims to Tokens
 - Built-in Base64 Encoding of Tokens
 - Custom token types
@@ -46,9 +47,6 @@ like this:
 def get_config():
     return {"authpaseto_secret_key": "secret"}
 ```
-
-## Roadmap
-- Support for WebSocket authorization
 
 ## FAQ
 - **Where's support for tokens in cookies?**\
