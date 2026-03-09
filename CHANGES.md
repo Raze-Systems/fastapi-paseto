@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-03-09T14:25:00-03:00
+
+- Added an autouse test fixture in `tests/conftest.py` that resets `AuthPASETO`'s class-level state before and after every test so test outcomes no longer depend on execution order.
+- Added a shared `configure_auth()` fixture in `tests/conftest.py` and updated the request-based test modules to declare their own auth configuration instead of inheriting it implicitly from previous tests.
+- Reworked `tests/test_decode_token.py` to replace wall-clock `time.sleep()` expiry checks with explicit `exp` claims, removing timing-based flakiness while preserving the expiry and leeway assertions.
+- Reworked `tests/test_denylist.py` so the denylist store and revoked-token setup are isolated per test instead of relying on module-global mutation across parametrized cases.
+- Updated `tests/test_config.py::test_secret_key_not_exist` to exercise the decode failure path directly, avoiding the old `TestClient` deadlock behavior triggered by that scenario on the current dependency stack.
+- Verified that `uv run --python 3.14 pytest -q` succeeds with `44 passed`.
+- Verified that `bash scripts/tests.sh` succeeds with `44 passed` and coverage output generation.
+- Rechecked the sandbox behavior and confirmed the remaining environment-specific issue is still `uv` cache access under `/home/alexs/.cache/uv`, not a reproducible test failure in the repo itself.
+
 ## 2026-03-09T02:46:38-03:00
 
 - Moved the `fastapi_paseto_auth` package into `src/fastapi_paseto_auth` to match `uv_build`'s default packaged-library layout while preserving the public import path.

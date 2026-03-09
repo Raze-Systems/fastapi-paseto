@@ -7,7 +7,8 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="function")
-def client():
+def client(configure_auth):
+    configure_auth()
     app = FastAPI()
 
     @app.exception_handler(AuthPASETOException)

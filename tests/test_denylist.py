@@ -5,13 +5,19 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-# setting for denylist token
-denylist = set()
+@pytest.fixture(scope="function")
+def denylist() -> set[str]:
+    """Store revoked token identifiers for the current test only."""
+
+    return set()
 
 
 @pytest.fixture(scope="function")
-def client():
-    AuthPASETO._denylist_enabled = True
+def client(configure_auth, denylist):
+    configure_auth(
+        authpaseto_denylist_enabled=True,
+        authpaseto_denylist_token_checks=["access", "refresh"],
+    )
 
     @AuthPASETO.token_in_denylist_loader
     def check_if_token_in_denylist(decrypted_token):
@@ -60,14 +66,42 @@ def client():
     return client
 
 
-@pytest.fixture(scope="module")
-def access_token(Authorize):
+@pytest.fixture(scope="function")
+def access_token(Authorize, configure_auth):
+    configure_auth(
+        authpaseto_denylist_enabled=True,
+        authpaseto_denylist_token_checks=["access", "refresh"],
+    )
     return Authorize.create_access_token(subject="test", fresh=True)
 
 
-@pytest.fixture(scope="module")
-def refresh_token(Authorize):
+@pytest.fixture(scope="function")
+def refresh_token(Authorize, configure_auth):
+    configure_auth(
+        authpaseto_denylist_enabled=True,
+        authpaseto_denylist_token_checks=["access", "refresh"],
+    )
     return Authorize.create_refresh_token(subject="test")
+
+
+@pytest.fixture(scope="function")
+def denylisted_access_token(client, access_token, denylist):
+    """Return an access token after revoking its identifier."""
+
+    response = client.get("/get-jti", headers={"Authorization": f"Bearer {access_token}"})
+    denylist.add(response.json()["jti"])
+    return access_token
+
+
+@pytest.fixture(scope="function")
+def denylisted_refresh_token(client, refresh_token, denylist):
+    """Return a refresh token after revoking its identifier."""
+
+    response = client.get(
+        "/get-refresh-jti", headers={"Authorization": f"Bearer {refresh_token}"}
+    )
+    denylist.add(response.json()["jti"])
+    return refresh_token
 
 
 @pytest.mark.parametrize(
@@ -78,14 +112,6 @@ def test_non_denylisted_access_token(client, url, access_token, Authorize: AuthP
     assert response.status_code == 200
     assert response.json() == {"hello": "world"}
 
-    # revoke token in last test url
-    if url == "/fresh-paseto-required":
-        response = client.get(
-            "/get-jti", headers={"Authorization": f"Bearer {access_token}"}
-        )
-        jti = response.json()["jti"]
-        denylist.add(jti)
-
 
 def test_non_denylisted_refresh_token(client, refresh_token, Authorize: AuthPASETO):
     url = "/paseto-refresh-required"
@@ -93,25 +119,22 @@ def test_non_denylisted_refresh_token(client, refresh_token, Authorize: AuthPASE
     assert response.status_code == 200
     assert response.json() == {"hello": "world"}
 
-    # revoke token
-    response = client.get(
-        "/get-refresh-jti", headers={"Authorization": f"Bearer {refresh_token}"}
-    )
-    jti = response.json()["jti"]
-    denylist.add(jti)
-
 
 @pytest.mark.parametrize(
     "url", ["/paseto-required", "/paseto-optional", "/fresh-paseto-required"]
 )
-def test_denylisted_access_token(client, url, access_token):
-    response = client.get(url, headers={"Authorization": f"Bearer {access_token}"})
+def test_denylisted_access_token(client, url, denylisted_access_token):
+    response = client.get(
+        url, headers={"Authorization": f"Bearer {denylisted_access_token}"}
+    )
     assert response.status_code == 401
     assert response.json() == {"detail": "Token has been revoked"}
 
 
-def test_denylisted_refresh_token(client, refresh_token):
+def test_denylisted_refresh_token(client, denylisted_refresh_token):
     url = "/paseto-refresh-required"
-    response = client.get(url, headers={"Authorization": f"Bearer {refresh_token}"})
+    response = client.get(
+        url, headers={"Authorization": f"Bearer {denylisted_refresh_token}"}
+    )
     assert response.status_code == 401
     assert response.json() == {"detail": "Token has been revoked"}

@@ -77,9 +77,8 @@ def test_secret_key_not_exist(client: TestClient, Authorize: AuthPASETO):
     Authorize._secret_key = None
 
     with pytest.raises(RuntimeError, match=r"authpaseto_secret_key"):
-        client.request(
-            method="GET", url="/protected", headers={"Authorization": f"Bearer {token}"}
-        )
+        Authorize._token = token
+        Authorize._decode_token()
 
 
 def test_denylist_enabled_without_callback(client: TestClient):

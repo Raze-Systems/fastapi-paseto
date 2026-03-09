@@ -9,7 +9,8 @@ from pydantic import BaseSettings
 
 
 @pytest.fixture(scope="function")
-def client():
+def client(configure_auth):
+    configure_auth()
     app = FastAPI()
 
     @app.exception_handler(AuthPASETOException)
@@ -34,13 +35,15 @@ def client():
     return client
 
 
-@pytest.fixture(scope="module")
-def access_token(Authorize):
+@pytest.fixture(scope="function")
+def access_token(Authorize, configure_auth):
+    configure_auth()
     return Authorize.create_access_token(subject="test", fresh=True)
 
 
-@pytest.fixture(scope="module")
-def refresh_token(Authorize):
+@pytest.fixture(scope="function")
+def refresh_token(Authorize, configure_auth):
+    configure_auth()
     return Authorize.create_refresh_token(subject="test")
 
 

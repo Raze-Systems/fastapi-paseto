@@ -1,4 +1,7 @@
-import pytest, pyseto, time, os
+from datetime import datetime, timedelta, timezone
+import os
+
+import pytest, pyseto
 from pyseto import Key
 from fastapi_paseto_auth import AuthPASETO
 from fastapi_paseto_auth.exceptions import AuthPASETOException
@@ -9,7 +12,8 @@ from pydantic import BaseSettings
 
 
 @pytest.fixture(scope="function")
-def client():
+def client(configure_auth):
+    configure_auth(authpaseto_secret_key="secret-key")
     app = FastAPI()
 
     @app.exception_handler(AuthPASETOException)
@@ -73,6 +77,14 @@ def encoded_token(default_access_token):
     return pyseto.encode(key, default_access_token).decode("utf-8")
 
 
+def make_expiring_claim(seconds_from_now: int) -> str:
+    """Return an ISO timestamp offset from the current UTC time."""
+
+    return (
+        datetime.now(tz=timezone.utc) + timedelta(seconds=seconds_from_now)
+    ).isoformat(timespec="seconds")
+
+
 def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO):
     class SettingsOne(BaseSettings):
         AUTHPASETO_SECRET_KEY: str = "secret-key"
@@ -93,8 +105,11 @@ def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO
     assert response.status_code == 422
     assert response.json() == {"detail": "Failed to decrypt."}
     # ExpiredSignatureError
-    token = Authorize.create_access_token(subject="test")
-    time.sleep(3)
+    token = Authorize.create_access_token(
+        subject="test",
+        expires_time=False,
+        user_claims={"exp": make_expiring_claim(-3)},
+    )
     response = client.get("/protected", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 422
     assert response.json() == {"detail": "Token expired."}
@@ -110,8 +125,16 @@ def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO
         return SettingsTwo()
 
     access_token = Authorize.create_access_token(subject="test")
-    refresh_token = Authorize.create_refresh_token(subject="test")
-    time.sleep(2)
+    refresh_token = Authorize.create_refresh_token(
+        subject="test",
+        expires_time=False,
+        user_claims={"exp": make_expiring_claim(-1)},
+    )
+    access_token = Authorize.create_access_token(
+        subject="test",
+        expires_time=False,
+        user_claims={"exp": make_expiring_claim(-1)},
+    )
     # PASETO payload is now expired
     # But with some leeway, it will still validate
     response = client.get(
