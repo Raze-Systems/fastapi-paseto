@@ -21,13 +21,19 @@ You might need to select the correct Python interpreter after opening the projec
 
 ### uv
 
-This repository uses <a href="https://docs.astral.sh/uv/" target="_blank">uv</a> for local development. To create the local environment with the optional dependencies used for tests, docs, and examples, run:
+This repository uses <a href="https://docs.astral.sh/uv/" target="_blank">uv</a> for local development. To create the local environment with the development dependencies used for tests, docs, and examples, run:
 
 ```bash
-$ uv sync --python 3.14 --extra test --extra doc --extra dev
+$ uv sync --python 3.14
 ```
 
-This will create a local `.venv/`, install the project in editable mode, and install the optional dependencies declared in `pyproject.toml`. The repo also includes a `.python-version` file so `uv` will prefer Python 3.14 for local development.
+This will create a local `.venv/`, install the project in editable mode, and install the `dev` dependency group declared in `pyproject.toml`. The repo also includes a `.python-version` file so `uv` will prefer Python 3.14 for local development.
+
+If you want a production-like local environment without the development tools, run:
+
+```bash
+$ uv sync --python 3.14 --no-dev
+```
 
 **Using your local FastAPI PASETO Auth**
 

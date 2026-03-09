@@ -1,5 +1,17 @@
 # Changes
 
+## 2026-03-09T02:46:38-03:00
+
+- Moved the `fastapi_paseto_auth` package into `src/fastapi_paseto_auth` to match `uv_build`'s default packaged-library layout while preserving the public import path.
+- Removed the flat-layout override from `pyproject.toml` so the build now follows the default `src/` module discovery behavior.
+- Replaced the published `test`, `doc`, and `dev` extras with a single local `dev` dependency group in `pyproject.toml`.
+- Updated `docs/contributing.md` to use `uv sync --python 3.14` for the default contributor setup and `uv sync --python 3.14 --no-dev` for a production-like local environment.
+- Updated the GitHub Actions test and docs workflows to install dependencies with `uv sync --python 3.14` so CI follows the new dependency-group layout.
+- Regenerated `uv.lock` so it records the new `dev` dependency group instead of published extras metadata.
+- Verified that `uv lock`, `uv build`, `uv sync --python 3.14`, `uv sync --python 3.14 --no-dev`, and `uv run --python 3.14 mkdocs build --strict` all succeed after the restructure.
+- Verified that `uv run --python 3.14 python -c "import fastapi_paseto_auth; print(fastapi_paseto_auth.__file__)"` resolves to the package under `src/`.
+- Rechecked the test suite and confirmed the remaining hang still occurs in `tests/test_config.py::test_secret_key_not_exist`, so there is no new packaging-specific regression identified from this restructure.
+
 ## 2026-03-09T03:10:00-03:00
 
 - Updated the supported interpreter target from Python 3.10 to Python 3.14 in `pyproject.toml`, `.python-version`, contributor docs, README installation notes, helper scripts, and GitHub Actions workflows.

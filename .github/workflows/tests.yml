@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install Dependencies
-        run: uv sync --python 3.14 --extra test --extra dev
+        run: uv sync --python 3.14
       - name: Test
         run: bash scripts/tests.sh
       - name: Coveralls
