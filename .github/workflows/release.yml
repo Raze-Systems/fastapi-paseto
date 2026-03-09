@@ -104,7 +104,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14 --frozen
       - name: Build package
         run: uv build
       - name: Install Twine
@@ -133,7 +133,7 @@ jobs:
           python-version: "3.14"
       - uses: actions/configure-pages@v5
       - name: Install dependencies
-        run: uv sync --python 3.14 --locked
+        run: uv sync --python 3.14 --frozen
       - name: Build docs
         run: uv run --python 3.14 mkdocs build --strict
       - name: Upload Pages artifact
