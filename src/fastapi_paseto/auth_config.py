@@ -1,3 +1,5 @@
+"""Shared mutable configuration state for ``AuthPASETO``."""
+
 from collections.abc import Callable, Mapping
 from datetime import timedelta
 
@@ -7,40 +9,68 @@ from pyseto import Token
 
 from fastapi_paseto.config import LoadConfig
 
+_CONFIG_ATTRIBUTE_MAP: tuple[tuple[str, str], ...] = (
+    ("_token_location", "authpaseto_token_location"),
+    ("_secret_key", "authpaseto_secret_key"),
+    ("_public_key", "authpaseto_public_key"),
+    ("_private_key", "authpaseto_private_key"),
+    ("_purpose", "authpaseto_purpose"),
+    ("_version", "authpaseto_version"),
+    ("_decode_leeway", "authpaseto_decode_leeway"),
+    ("_encode_issuer", "authpaseto_encode_issuer"),
+    ("_decode_issuer", "authpaseto_decode_issuer"),
+    ("_decode_audience", "authpaseto_decode_audience"),
+    ("_denylist_enabled", "authpaseto_denylist_enabled"),
+    ("_denylist_token_checks", "authpaseto_denylist_token_checks"),
+    ("_header_name", "authpaseto_header_name"),
+    ("_header_type", "authpaseto_header_type"),
+    ("_json_key", "authpaseto_json_key"),
+    ("_json_type", "authpaseto_json_type"),
+    ("_access_token_expires", "authpaseto_access_token_expires"),
+    ("_refresh_token_expires", "authpaseto_refresh_token_expires"),
+    ("_other_token_expires", "authpaseto_other_token_expires"),
+)
+
 
 class AuthConfig:
-    _token = None
-    _token_parts = []
-    _token_location = ("headers",)
-    _current_user = None
+    """Hold class-level configuration shared by all ``AuthPASETO`` instances."""
+
+    _token: str | None = None
+    _token_parts: list[str] = []
+    _token_location: list[str] | tuple[str, ...] = ("headers",)
+    _current_user: str | int | None = None
     _decoded_token: Token | None = None
 
-    _secret_key = None
-    _public_key = None
-    _private_key = None
-    _purpose = "local"
-    _version = 4
-    _decode_leeway = 0
-    _encode_issuer = None
-    _decode_issuer = None
-    _decode_audience = ""
+    _secret_key: str | None = None
+    _public_key: str | None = None
+    _private_key: str | None = None
+    _purpose: str = "local"
+    _version: int = 4
+    _decode_leeway: int | timedelta = 0
+    _encode_issuer: str | None = None
+    _decode_issuer: str | None = None
+    _decode_audience: str | list[str] | tuple[str, ...] = ""
     _denylist_enabled = False
-    _denylist_token_checks = ("access", "refresh")
-    _header_name = "Authorization"
-    _header_type = "Bearer"
-    _json_key = "access_token"
-    _json_type = None
-    _token_in_denylist_callback = None
+    _denylist_token_checks: list[str] | tuple[str, ...] = ("access", "refresh")
+    _header_name: str = "Authorization"
+    _header_type: str | None = "Bearer"
+    _json_key: str = "access_token"
+    _json_type: str | None = None
+    _token_in_denylist_callback: Callable[..., bool] | None = None
     _access_token_expires = timedelta(minutes=15)
     _refresh_token_expires = timedelta(days=30)
     _other_token_expires = timedelta(days=30)
 
     @property
     def paseto_in_headers(self) -> bool:
+        """Return whether headers are configured as a token source."""
+
         return "headers" in self._token_location
 
     @property
     def paseto_in_json(self) -> bool:
+        """Return whether JSON bodies are configured as a token source."""
+
         return "json" in self._token_location
 
     @staticmethod
@@ -63,29 +93,13 @@ class AuthConfig:
     def load_config(
         cls, settings: Callable[[], Mapping[str, object] | BaseSettings]
     ) -> "AuthConfig":
+        """Load configuration values from a callback into class-level state."""
+
         try:
             raw_settings = settings()
             config = LoadConfig(**cls._normalize_settings(raw_settings))
-
-            cls._token_location = config.authpaseto_token_location
-            cls._secret_key = config.authpaseto_secret_key
-            cls._public_key = config.authpaseto_public_key
-            cls._private_key = config.authpaseto_private_key
-            cls._purpose = config.authpaseto_purpose
-            cls._version = config.authpaseto_version
-            cls._decode_leeway = config.authpaseto_decode_leeway
-            cls._encode_issuer = config.authpaseto_encode_issuer
-            cls._decode_issuer = config.authpaseto_decode_issuer
-            cls._decode_audience = config.authpaseto_decode_audience
-            cls._denylist_enabled = config.authpaseto_denylist_enabled
-            cls._denylist_token_checks = config.authpaseto_denylist_token_checks
-            cls._header_name = config.authpaseto_header_name
-            cls._header_type = config.authpaseto_header_type
-            cls._json_key = config.authpaseto_json_key
-            cls._json_type = config.authpaseto_json_type
-            cls._access_token_expires = config.authpaseto_access_token_expires
-            cls._refresh_token_expires = config.authpaseto_refresh_token_expires
-            cls._other_token_expires = config.authpaseto_other_token_expires
+            for attribute_name, config_name in _CONFIG_ATTRIBUTE_MAP:
+                setattr(cls, attribute_name, getattr(config, config_name))
         except ValidationError:
             raise
         except TypeError:
@@ -99,15 +113,7 @@ class AuthConfig:
 
     @classmethod
     def token_in_denylist_loader(cls, callback: Callable[..., bool]) -> "AuthConfig":
-        """
-        This decorator sets the callback function that will be called when
-        a protected endpoint is accessed and will check if the PASETO has been
-        been revoked. By default, this callback is not used.
+        """Register the callback used to decide whether a token is revoked."""
 
-        *HINT*: The callback must be a function that takes decrypted_token argument,
-        args for object AuthPASETO and this is not used, decrypted_token is decode
-        PASETO (python dictionary) and returns *`True`* if the token has been deny,
-        or *`False`* otherwise.
-        """
         cls._token_in_denylist_callback = callback
         return cls

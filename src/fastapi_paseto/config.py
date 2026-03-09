@@ -1,7 +1,23 @@
+"""Configuration validation for the ``fastapi_paseto`` package."""
+
 from datetime import timedelta
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator, model_validator
+
+_ALLOWED_SEQUENCE_VALUES: dict[str, set[str]] = {
+    "authpaseto_denylist_token_checks": {"access", "refresh"},
+    "authpaseto_token_location": {"headers", "json"},
+}
+
+_SEQUENCE_ERROR_MESSAGES: dict[str, str] = {
+    "authpaseto_denylist_token_checks": (
+        "The 'authpaseto_denylist_token_checks' must be between 'access' or 'refresh'"
+    ),
+    "authpaseto_token_location": (
+        "The 'authpaseto_token_location' must be between 'headers' or 'json'"
+    ),
+}
 
 
 def _validate_expiry(name: str, value: bool | int | timedelta) -> bool | int | timedelta:
@@ -49,22 +65,16 @@ class LoadConfig(BaseModel):
     )
     @classmethod
     def validate_sequence_values(
-        cls, values: list[str] | tuple[str, ...], info
+        cls,
+        values: list[str] | tuple[str, ...],
+        info: ValidationInfo,
     ) -> list[str] | tuple[str, ...]:
         """Validate constrained string collections."""
 
-        allowed_values = {
-            "authpaseto_denylist_token_checks": {"access", "refresh"},
-            "authpaseto_token_location": {"headers", "json"},
-        }
         field_name = info.field_name
-        allowed = allowed_values[field_name]
+        allowed = _ALLOWED_SEQUENCE_VALUES[field_name]
         if invalid_value := next((value for value in values if value not in allowed), None):
-            message = {
-                "authpaseto_denylist_token_checks": "The 'authpaseto_denylist_token_checks' must be between 'access' or 'refresh'",
-                "authpaseto_token_location": "The 'authpaseto_token_location' must be between 'headers' or 'json'",
-            }[field_name]
-            raise ValueError(message)
+            raise ValueError(_SEQUENCE_ERROR_MESSAGES[field_name])
         return values
 
     @field_validator(
@@ -74,8 +84,12 @@ class LoadConfig(BaseModel):
         mode="after",
     )
     @classmethod
-    def validate_expiry_fields(cls, value: bool | int | timedelta, info) -> bool | int | timedelta:
-        """Ensure expiry fields only allow False as a boolean value."""
+    def validate_expiry_fields(
+        cls,
+        value: bool | int | timedelta,
+        info: ValidationInfo,
+    ) -> bool | int | timedelta:
+        """Ensure expiry fields only allow ``False`` as a boolean value."""
 
         return _validate_expiry(info.field_name, value)
 
@@ -83,7 +97,10 @@ class LoadConfig(BaseModel):
     def load_key_files(self) -> "LoadConfig":
         """Populate inline key fields from file paths when needed."""
 
-        if self.authpaseto_private_key is None and self.authpaseto_private_key_file is not None:
+        if (
+            self.authpaseto_private_key is None
+            and self.authpaseto_private_key_file is not None
+        ):
             self.authpaseto_private_key = Path(self.authpaseto_private_key_file).read_text()
 
         if self.authpaseto_public_key is None and self.authpaseto_public_key_file is not None:

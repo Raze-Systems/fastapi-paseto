@@ -1,111 +1,55 @@
-class AuthPASETOException(Exception):
-    """
-    Base exception which all fastapi_paseto errors extend
-    """
+"""Exception hierarchy for the ``fastapi_paseto`` package."""
 
-    def __init__(self, status_code: int, message: str, **kwargs):
+class AuthPASETOException(Exception):
+    """Base exception for all ``fastapi_paseto`` errors."""
+
+    def __init__(self, status_code: int, message: str, **kwargs) -> None:
+        """Store the HTTP status code and human-readable error message."""
+
         super().__init__(**kwargs)
         self.status_code = status_code
         self.message = message
 
 
 class InvalidHeaderError(AuthPASETOException):
-    """
-    An error getting paseto in header or paseto header information from a request
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a token-bearing header or JSON field is malformed."""
 
 
 class InvalidTokenTypeError(AuthPASETOException):
-    """
-    Error raised if the expected token type is not found in the token
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a token's ``type`` claim does not match the requirement."""
 
 
 class PASETODecodeError(AuthPASETOException):
-    """
-    An error decoding a PASETO
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a PASETO cannot be decoded or verified."""
 
 
 class InvalidPASETOVersionError(AuthPASETOException):
-    """
-    Error raised if the version of the PASETO is not supported
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when the token version prefix is not supported."""
 
 
 class InvalidPASETOArgumentError(AuthPASETOException):
-    """
-    Error raised if PASETOs get checked with unfulfillable arguments
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a validation call receives incompatible arguments."""
 
 
 class InvalidPASETOPurposeError(AuthPASETOException):
-    """
-    Error raised if the purpose of the PASETO is not supported
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when the token purpose segment is not supported."""
 
 
 class MissingTokenError(AuthPASETOException):
-    """
-    Error raised when token not found
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when no token is available for a required endpoint."""
 
 
 class RevokedTokenError(AuthPASETOException):
-    """
-    Error raised when a revoked token attempt to access a protected endpoint
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a denylisted token is used."""
 
 
 class AccessTokenRequired(AuthPASETOException):
-    """
-    Error raised when a valid, non-access PASETO attempt to access an endpoint
-    protected by paseto_required, paseto_optional, fresh_paseto_required
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when an access token is required but another token is provided."""
 
 
 class RefreshTokenRequired(AuthPASETOException):
-    """
-    Error raised when a valid, non-refresh PASETO attempt to access an endpoint
-    protected by paseto_refresh_token_required
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a refresh token is required but another token is provided."""
 
 
 class FreshTokenRequired(AuthPASETOException):
-    """
-    Error raised when a valid, non-fresh PASETO attempt to access an endpoint
-    protected by fresh_paseto_required
-    """
-
-    def __init__(self, status_code: int, message: str, **kwargs):
-        super().__init__(status_code=status_code, message=message, **kwargs)
+    """Raised when a fresh access token is required but a stale one is provided."""
