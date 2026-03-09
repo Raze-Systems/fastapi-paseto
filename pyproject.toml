@@ -51,10 +51,6 @@ dev = [
 ]
 
 [tool.semantic_release]
-build_command = """
-uv build
-uv run --python 3.14 mkdocs build --strict
-"""
 commit_message = "chore(release): v{version}"
 commit_parser = "conventional"
 tag_format = "v{version}"
