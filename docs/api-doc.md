@@ -6,7 +6,8 @@ In here you will find the API for everything exposed in this extension.
     This decorator sets the callback function to overwrite state on AuthPASETO class so
     when you initialize an instance in dependency injection default value will be overwritten.
 
-    The callback must be a function that returns a list of tuple or pydantic object.
+    The callback must be a function that returns either a plain mapping
+    (`dict[str, object]`) or a `pydantic-settings` `BaseSettings` instance.
 ---
 **token_in_denylist_loader**(callback):
     This decorator sets the callback function that will be called when
@@ -37,7 +38,7 @@ In here you will find the API for everything exposed in this extension.
 
 ### Utilities
 
-**create_access_token** (subject, fresh=False, purpose=None, headers=None, expires_time=None, audience=None, user_claims={}, base64_encode: bool = False):
+**create_access_token** (subject, fresh=False, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
 
     *Create a new access token.*
 
@@ -45,28 +46,26 @@ In here you will find the API for everything exposed in this extension.
         **subject**: Identifier for who this token is for example id or username from database
         **fresh**: Identify if token is fresh or non-fresh
         **purpose**: Purpose for the PASETO
-        **headers**: Valid dict for specifying additional headers in PASETO header section
         **expires_time**: Set the duration of the PASETO
         **audience**: Expected audience in the PASETO
         **user_claims**: Custom claims to include in this token. This data must be dictionary
         **base64_encode**: If true the created token will be base64 encoded. This is useful for if you need to pass the token somewhere where special characters might cause issues.
     * Returns: An encoded access token
 
-**create_refresh_token**(subject, purpose=None, headers=None, expires_time=None, audience=None, user_claims={}, base64_encode: bool = False):
+**create_refresh_token**(subject, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
 
     *Creates a new refresh token.*
 
     * Parameters:
         **subject**: Identifier for who this token is for example id or username from database
         **purpose**: Purpose for the PASETO
-        **headers**: Valid dict for specifying additional headers in PASETO header section
         **expires_time**: Set the duration of the PASETO
         **audience**: Expected audience in the PASETO
         **user_claims**: Custom claims to include in this token. This data must be dictionary
         **base64_encode**: If true the created token will be base64 encoded. This is useful for if you need to pass the token somewhere where special characters might cause issues.
     * Returns: An encoded refresh token
 
-**create_token**(subject, type, purpose=None, headers=None, expires_time=None, audience=None, user_claims={}, base64_encode: bool = False):
+**create_token**(subject, type, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
 
     *Creates a new refresh token.*
 
@@ -74,7 +73,6 @@ In here you will find the API for everything exposed in this extension.
         **subject**: Identifier for who this token is for example id or username from database
         **type**: Type of the token to be created
         **purpose**: Purpose for the PASETO
-        **headers**: Valid dict for specifying additional headers in PASETO header section
         **expires_time**: Set the duration of the PASETO
         **audience**: Expected audience in the PASETO
         **user_claims**: Custom claims to include in this token. This data must be dictionary

@@ -12,25 +12,21 @@ class User(BaseModel):
     password: str
 
 
-class Settings(BaseModel):
-    authpaseto_secret_key: str = "secret"
-
-    # Private and public keys are required if you want to use public purpose authentication
-    authpaseto_private_key: str = """
+@AuthPASETO.load_config
+def get_config():
+    return {
+        "authpaseto_secret_key": "secret",
+        "authpaseto_private_key": """
 -----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIL7pfyWYtZD7fDPDm+W0kWbNo/AdbRrDjjxMOgy2EL1N
 -----END PRIVATE KEY-----
-"""
-    authpaset_public_key: str = """
+""",
+        "authpaseto_public_key": """
 -----BEGIN PUBLIC KEY-----
 MCowBQYDK2VwAyEAc4ZDHPLZ6eGU3yL4ApPpQUq4cQUA900NY1csJIcwAxY=
 -----END PUBLIC KEY-----
-"""
-
-
-@AuthPASETO.load_config
-def get_config():
-    return Settings()
+""",
+    }
 
 
 @app.exception_handler(AuthPASETOException)

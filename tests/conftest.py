@@ -9,7 +9,7 @@ from fastapi_paseto_auth import AuthPASETO
 _AUTHPASETO_DEFAULTS: dict[str, object] = {
     "_token": None,
     "_token_parts": [],
-    "_token_location": {"headers"},
+    "_token_location": ("headers",),
     "_current_user": None,
     "_decoded_token": None,
     "_secret_key": None,
@@ -22,7 +22,7 @@ _AUTHPASETO_DEFAULTS: dict[str, object] = {
     "_decode_issuer": None,
     "_decode_audience": "",
     "_denylist_enabled": False,
-    "_denylist_token_checks": {"access", "refresh"},
+    "_denylist_token_checks": ("access", "refresh"),
     "_header_name": "Authorization",
     "_header_type": "Bearer",
     "_token_in_denylist_callback": None,
@@ -73,9 +73,9 @@ def configure_auth():
         settings.update(overrides)
 
         @AuthPASETO.load_config
-        def get_settings() -> list[tuple[str, object]]:
-            """Return explicit config pairs for the test harness."""
+        def get_settings() -> dict[str, object]:
+            """Return explicit config values for the test harness."""
 
-            return list(settings.items())
+            return settings
 
     return _configure

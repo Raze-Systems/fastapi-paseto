@@ -36,6 +36,16 @@ This project currently targets Python 3.14+.
 pip install fastapi-paseto-auth
 ```
 
+`AuthPASETO.load_config()` now expects a callback that returns either a plain
+mapping or a `pydantic-settings` `BaseSettings` instance. A minimal setup looks
+like this:
+
+```python
+@AuthPASETO.load_config
+def get_config():
+    return {"authpaseto_secret_key": "secret"}
+```
+
 ## Roadmap
 - Support for WebSocket authorization
 

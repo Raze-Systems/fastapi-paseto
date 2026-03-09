@@ -1,11 +1,10 @@
-from typing import Sequence
 import pytest
 from fastapi_paseto_auth import AuthPASETO
 from fastapi_paseto_auth.exceptions import AuthPASETOException
 from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 @pytest.fixture(scope="function")
@@ -13,7 +12,7 @@ def client():
     app = FastAPI()
 
     class SettingsOne(BaseSettings):
-        authpaseto_token_location: Sequence[str] = {"headers"}
+        authpaseto_token_location: list[str] = ["headers"]
         authpaseto_secret_key: str = "testing"
 
     @AuthPASETO.load_config

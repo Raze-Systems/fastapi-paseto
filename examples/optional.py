@@ -12,13 +12,9 @@ class User(BaseModel):
     password: str
 
 
-class Settings(BaseModel):
-    authpaseto_secret_key: str = "secret"
-
-
-@AuthPASETOException.load_config
+@AuthPASETO.load_config
 def get_config():
-    return Settings()
+    return {"authpaseto_secret_key": "secret"}
 
 
 @app.exception_handler(AuthPASETOException)

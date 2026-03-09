@@ -1,30 +1,32 @@
 import binascii
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Sequence, Union, List
-from fastapi import Request, Response, Depends
-from fastapi_paseto_auth.auth_config import AuthConfig
-import uuid
 import json
+import uuid
+from collections.abc import Sequence
+from datetime import datetime, timedelta, timezone
 from json import JSONDecodeError
-from pyseto import Key, Paseto, Token
-from pyseto.exceptions import VerifyError, DecryptError, SignError
+
 import base64
+from fastapi import Depends, Request, Response
+from pyseto import Key, Paseto, Token
+from pyseto.exceptions import DecryptError, SignError, VerifyError
+
+from fastapi_paseto_auth.auth_config import AuthConfig
 from fastapi_paseto_auth.exceptions import (
-    InvalidHeaderError,
-    InvalidPASETOPurposeError,
-    PASETODecodeError,
-    RevokedTokenError,
-    MissingTokenError,
     AccessTokenRequired,
-    RefreshTokenRequired,
     FreshTokenRequired,
-    InvalidPASETOVersionError,
+    InvalidHeaderError,
     InvalidPASETOArgumentError,
+    InvalidPASETOPurposeError,
+    InvalidPASETOVersionError,
     InvalidTokenTypeError,
+    MissingTokenError,
+    PASETODecodeError,
+    RefreshTokenRequired,
+    RevokedTokenError,
 )
 
 
-async def get_request_json(request: Request) -> str:
+async def get_request_json(request: Request) -> dict[str, object]:
     try:
         return await request.json()
     except JSONDecodeError:
@@ -36,14 +38,14 @@ class AuthPASETO(AuthConfig):
         self,
         request: Request = None,
         response: Response = None,
-        request_json: Dict = Depends(get_request_json),
+        request_json: dict[str, object] = Depends(get_request_json),
     ) -> None:
         """
         Get PASETO header from incoming request and decode it
         """
         self._request_json = request_json
         # self._token = self._get_paseto_from_header(request.headers.get(self._header_name))
-        if request:
+        if request is not None:
             self._request = request
         # if self.paseto_in_headers:
         #     auth_header = request.headers.get(self._header_name)
@@ -54,7 +56,7 @@ class AuthPASETO(AuthConfig):
 
     def _get_paseto_from_json(
         self, json_key: str | None = None, json_type: str | None = None
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get token from the request body
         :param request: incoming request
@@ -84,7 +86,7 @@ class AuthPASETO(AuthConfig):
 
     def _get_paseto_from_header(
         self, header_name: str | None = None, header_type: str | None = None
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get token from the headers
         :param auth_header: value from HeaderName
@@ -95,9 +97,9 @@ class AuthPASETO(AuthConfig):
         auth_header: str = self._request.headers.get(self._header_name)
         if not auth_header:
             return None
-        parts: List[str] = auth_header.split()
+        parts: list[str] = auth_header.split()
 
-        token: Optional[str] = None
+        token: str | None = None
 
         # Make sure the header is in a valid format that we are expecting
         if not header_type:
@@ -164,15 +166,15 @@ class AuthPASETO(AuthConfig):
 
     def _create_token(
         self,
-        subject: Union[str, int],
+        subject: str | int,
         type_token: str,
         exp_seconds: int,
-        fresh: Optional[bool] = None,
-        issuer: Optional[str] = None,
-        purpose: Optional[str] = None,
-        audience: Optional[Union[str, Sequence[str]]] = "",
-        user_claims: Optional[Dict[str, Union[str, bool]]] = {},
-        version: Optional[int] = None,
+        fresh: bool | None = None,
+        issuer: str | None = None,
+        purpose: str | None = None,
+        audience: str | Sequence[str] = "",
+        user_claims: dict[str, object] | None = None,
+        version: int | None = None,
         base64_encode: bool = False,
     ) -> str:
         """
@@ -190,6 +192,7 @@ class AuthPASETO(AuthConfig):
             raise TypeError("version must be an integer")
         if user_claims and not isinstance(user_claims, dict):
             raise TypeError("User claims must be a dictionary")
+        user_claims = user_claims or {}
 
         reserved_claims = {
             "sub": subject,
@@ -239,7 +242,7 @@ class AuthPASETO(AuthConfig):
         """
         return self._token_in_denylist_callback is not None
 
-    def _check_token_is_revoked(self, payload: Dict) -> None:
+    def _check_token_is_revoked(self, payload: dict[str, object]) -> None:
         """
         Ensure that AUTHPASETO_DENYLIST_ENABLED is true and callback regulated, and then
         call function denylist callback with passing decode PASETO, if true
@@ -261,7 +264,7 @@ class AuthPASETO(AuthConfig):
     def _get_expiry_seconds(
         self,
         type_token: str,
-        expires_time: Optional[Union[timedelta, datetime, int, bool]] = None,
+        expires_time: timedelta | datetime | int | bool | None = None,
     ) -> int:
         if expires_time and not isinstance(
             expires_time, (timedelta, datetime, int, bool)
@@ -297,13 +300,13 @@ class AuthPASETO(AuthConfig):
 
     def create_access_token(
         self,
-        subject: Union[str, int],
-        fresh: Optional[bool] = False,
-        purpose: Optional[str] = None,
-        expires_time: Optional[Union[timedelta, datetime, int, bool]] = None,
-        audience: Optional[Union[str, Sequence[str]]] = None,
-        user_claims: Optional[Dict] = {},
-        base64_encode: Optional[bool] = False,
+        subject: str | int,
+        fresh: bool = False,
+        purpose: str | None = None,
+        expires_time: timedelta | datetime | int | bool | None = None,
+        audience: str | Sequence[str] | None = None,
+        user_claims: dict[str, object] | None = None,
+        base64_encode: bool = False,
     ) -> str:
         """
         Create a access token with 15 minutes for expired time (default),
@@ -324,11 +327,11 @@ class AuthPASETO(AuthConfig):
 
     def create_refresh_token(
         self,
-        subject: Union[str, int],
-        purpose: Optional[str] = None,
-        expires_time: Optional[Union[timedelta, datetime, int, bool]] = None,
-        audience: Optional[Union[str, Sequence[str]]] = None,
-        user_claims: Optional[Dict] = {},
+        subject: str | int,
+        purpose: str | None = None,
+        expires_time: timedelta | datetime | int | bool | None = None,
+        audience: str | Sequence[str] | None = None,
+        user_claims: dict[str, object] | None = None,
         base64_encode: bool = False,
     ) -> str:
         """
@@ -348,12 +351,12 @@ class AuthPASETO(AuthConfig):
 
     def create_token(
         self,
-        subject: Union[str, int],
+        subject: str | int,
         type: str,
-        purpose: Optional[str] = None,
-        expires_time: Optional[Union[timedelta, datetime, int, bool]] = None,
-        audience: Optional[Union[str, Sequence[str]]] = None,
-        user_claims: Optional[Dict] = {},
+        purpose: str | None = None,
+        expires_time: timedelta | datetime | int | bool | None = None,
+        audience: str | Sequence[str] | None = None,
+        user_claims: dict[str, object] | None = None,
         base64_encode: bool = False,
     ) -> str:
         """
@@ -404,7 +407,7 @@ class AuthPASETO(AuthConfig):
 
     def _get_raw_token_parts(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         if self._token_parts:
             return self._token_parts
 
@@ -465,7 +468,7 @@ class AuthPASETO(AuthConfig):
         except (DecryptError, SignError, VerifyError) as err:
             raise PASETODecodeError(status_code=422, message=str(err))
 
-    def get_token_payload(self) -> Optional[Dict[str, Union[str, int, bool]]]:
+    def get_token_payload(self) -> dict[str, object] | None:
         """
         Get payload from token
         :return: payload from token
@@ -487,7 +490,7 @@ class AuthPASETO(AuthConfig):
             return payload["jti"]
         return None
 
-    def get_paseto_subject(self) -> Optional[Union[str, int]]:
+    def get_paseto_subject(self) -> str | int | None:
         """
         this will return the subject of the PASETO that is accessing this endpoint.
         If no PASETO is present, `None` is returned instead.
@@ -499,7 +502,7 @@ class AuthPASETO(AuthConfig):
 
         return None
 
-    def get_subject(self) -> Optional[Union[str, int]]:
+    def get_subject(self) -> str | int | None:
         """
         this will return the subject of the PASETO that is accessing this endpoint.
         If no PASETO was validated yet, returns none
@@ -513,12 +516,12 @@ class AuthPASETO(AuthConfig):
         optional: bool = False,
         fresh: bool = False,
         refresh_token: bool = False,
-        type: Optional[str] = None,
+        type: str | None = None,
         base64_encoded: bool = False,
-        location: Optional[str] = None,
-        token_key: Optional[str] = None,
-        token_prefix: Optional[str] = None,
-        token: Optional[Union[str, bool]] = None,
+        location: str | Sequence[str] | None = None,
+        token_key: str | None = None,
+        token_prefix: str | None = None,
+        token: str | bool | None = None,
     ) -> None:
         """
         This function will check whether the requester has a valid token. If not, it will raise an exception.

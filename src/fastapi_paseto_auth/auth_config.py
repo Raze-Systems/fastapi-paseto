@@ -1,16 +1,19 @@
-from fastapi_paseto_auth.config import LoadConfig
-from pydantic import ValidationError
-from typing import Callable, List, Optional, Dict
+from collections.abc import Callable, Mapping
 from datetime import timedelta
+
+from pydantic import ValidationError
+from pydantic_settings import BaseSettings
 from pyseto import Token
+
+from fastapi_paseto_auth.config import LoadConfig
 
 
 class AuthConfig:
     _token = None
     _token_parts = []
-    _token_location = {"headers"}
+    _token_location = ("headers",)
     _current_user = None
-    _decoded_token: Optional[Token] = None
+    _decoded_token: Token | None = None
 
     _secret_key = None
     _public_key = None
@@ -22,9 +25,11 @@ class AuthConfig:
     _decode_issuer = None
     _decode_audience = ""
     _denylist_enabled = False
-    _denylist_token_checks = {"access", "refresh"}
+    _denylist_token_checks = ("access", "refresh")
     _header_name = "Authorization"
     _header_type = "Bearer"
+    _json_key = "access_token"
+    _json_type = None
     _token_in_denylist_callback = None
     _access_token_expires = timedelta(minutes=15)
     _refresh_token_expires = timedelta(days=30)
@@ -38,10 +43,29 @@ class AuthConfig:
     def paseto_in_json(self) -> bool:
         return "json" in self._token_location
 
+    @staticmethod
+    def _normalize_settings(
+        settings: Mapping[str, object] | BaseSettings,
+    ) -> dict[str, object]:
+        """Normalize supported config inputs into lowercase keys."""
+
+        if isinstance(settings, BaseSettings):
+            return {key.lower(): value for key, value in settings.model_dump().items()}
+
+        if isinstance(settings, Mapping):
+            return {str(key).lower(): value for key, value in settings.items()}
+
+        raise TypeError(
+            "Config must be a mapping or pydantic-settings 'BaseSettings'"
+        )
+
     @classmethod
-    def load_config(cls, settings: Callable[..., List[tuple]]) -> "AuthConfig":
+    def load_config(
+        cls, settings: Callable[[], Mapping[str, object] | BaseSettings]
+    ) -> "AuthConfig":
         try:
-            config = LoadConfig(**{key.lower(): value for key, value in settings()})
+            raw_settings = settings()
+            config = LoadConfig(**cls._normalize_settings(raw_settings))
 
             cls._token_location = config.authpaseto_token_location
             cls._secret_key = config.authpaseto_secret_key
@@ -64,8 +88,14 @@ class AuthConfig:
             cls._other_token_expires = config.authpaseto_other_token_expires
         except ValidationError:
             raise
-        except Exception:
-            raise TypeError("Config must be pydantic 'BaseSettings' or list of tuple")
+        except TypeError:
+            raise
+        except Exception as err:
+            raise TypeError(
+                "Config must be a mapping or pydantic-settings 'BaseSettings'"
+            ) from err
+
+        return cls
 
     @classmethod
     def token_in_denylist_loader(cls, callback: Callable[..., bool]) -> "AuthConfig":
@@ -80,3 +110,4 @@ class AuthConfig:
         or *`False`* otherwise.
         """
         cls._token_in_denylist_callback = callback
+        return cls

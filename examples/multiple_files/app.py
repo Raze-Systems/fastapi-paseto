@@ -2,19 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi_paseto_auth import AuthPASETO
 from fastapi_paseto_auth.exceptions import AuthPASETOException
-from routers import users, items
-from pydantic import BaseModel
+from routers import items, users
 
 app = FastAPI()
 
 
-class Settings(BaseModel):
-    authpaseto_secret_key: str = "secret"
-
-
 @AuthPASETO.load_config
 def get_config():
-    return Settings()
+    return {"authpaseto_secret_key": "secret"}
 
 
 @app.exception_handler(AuthPASETOException)

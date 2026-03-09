@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-03-09T15:03:11-03:00
+
+- Upgraded the runtime stack to `fastapi==0.135.1`, `pydantic==2.12.5`, and `pydantic-settings==2.12.0`; kept `pyseto==1.9.1` because it is already current and compatible.
+- Reworked config validation onto Pydantic v2 APIs in `src/fastapi_paseto_auth/config.py`, replacing v1 validators and `Config` usage with `field_validator`, `model_validator`, and `model_config`.
+- Changed `AuthPASETO.load_config()` to accept a callback returning either a plain mapping or a `pydantic-settings` `BaseSettings` instance; removed the old `list[tuple]`/generic Pydantic-object contract.
+- Fixed `AuthPASETO` dependency injection compatibility with modern FastAPI while preserving direct `AuthPASETO()` construction for tests and non-request token creation.
+- Removed mutable default arguments from token creation methods and tightened related typing in the auth implementation.
+- Updated tests to target the new config contract and modern Starlette `TestClient` behavior.
+- Updated examples and API docs so they no longer show returning `pydantic.BaseModel` config objects from `load_config()`.
+- Regenerated `uv.lock` and verified that `uv run pytest -q` succeeds with `44 passed`.
+
 ## 2026-03-09T14:25:00-03:00
 
 - Added an autouse test fixture in `tests/conftest.py` that resets `AuthPASETO`'s class-level state before and after every test so test outcomes no longer depend on execution order.

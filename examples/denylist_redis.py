@@ -14,15 +14,13 @@ class User(BaseModel):
     password: str
 
 
-class Settings(BaseModel):
-    authpaseto_secret_key: str = "secret"
-    authpaseto_denylist_enabled: bool = True
-    authpaseto_denylist_token_checks: set = {"access", "refresh"}
-    access_expires: int = timedelta(minutes=15)
-    refresh_expires: int = timedelta(days=30)
-
-
-settings = Settings()
+settings = {
+    "authpaseto_secret_key": "secret",
+    "authpaseto_denylist_enabled": True,
+    "authpaseto_denylist_token_checks": ["access", "refresh"],
+    "access_expires": timedelta(minutes=15),
+    "refresh_expires": timedelta(days=30),
+}
 
 
 @AuthPASETO.load_config

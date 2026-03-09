@@ -13,17 +13,13 @@ class User(BaseModel):
     password: str
 
 
-# set denylist enabled to True
-# you can set to check access or refresh token or even both of them
-class Settings(BaseModel):
-    authpaseto_secret_key: str = "secret"
-    authpaseto_denylist_enabled: bool = True
-    authpaseto_denylist_token_checks: set = {"access", "refresh"}
-
-
 @AuthPASETO.load_config
 def get_config():
-    return Settings()
+    return {
+        "authpaseto_secret_key": "secret",
+        "authpaseto_denylist_enabled": True,
+        "authpaseto_denylist_token_checks": ["access", "refresh"],
+    }
 
 
 @app.exception_handler(AuthPASETOException)

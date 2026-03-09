@@ -1,12 +1,17 @@
 import json
-import pytest, os, pyseto
-from pyseto import Key
-from fastapi_paseto_auth import AuthPASETO
-from fastapi import FastAPI, Depends
-from fastapi.testclient import TestClient
-from pydantic import BaseSettings, ValidationError
-from typing import Sequence, Optional
+import os
+from collections.abc import Sequence
 from datetime import timedelta
+
+import pyseto
+import pytest
+from fastapi import Depends, FastAPI
+from fastapi.testclient import TestClient
+from pydantic import ValidationError
+from pydantic_settings import BaseSettings
+from pyseto import Key
+
+from fastapi_paseto_auth import AuthPASETO
 
 
 @pytest.fixture(scope="function")
@@ -23,7 +28,7 @@ def client():
 
 def test_default_config():
     assert AuthPASETO._token is None
-    assert AuthPASETO._token_location == {"headers"}
+    assert AuthPASETO._token_location == ("headers",)
     assert AuthPASETO._current_user is None
     assert AuthPASETO._decoded_token is None
     assert AuthPASETO._secret_key is None
@@ -35,7 +40,7 @@ def test_default_config():
     assert AuthPASETO._decode_issuer is None
     assert AuthPASETO._decode_audience == ""
     assert AuthPASETO._denylist_enabled is False
-    assert AuthPASETO._denylist_token_checks == {"access", "refresh"}
+    assert AuthPASETO._denylist_token_checks == ("access", "refresh")
     assert AuthPASETO._token_in_denylist_callback is None
     assert AuthPASETO._header_name == "Authorization"
     assert AuthPASETO._header_type == "Bearer"
@@ -104,7 +109,7 @@ def test_denylist_enabled_without_callback(client: TestClient):
     class SettingsTwo(BaseSettings):
         authpaseto_secret_key: str = "secret-key"
         authpaseto_denylist_enabled: bool = True
-        authpaseto_denylist_token_checks: list = ["access"]
+        authpaseto_denylist_token_checks: list[str] = ["access"]
 
     @AuthPASETO.load_config
     def get_settings_two():
@@ -117,9 +122,9 @@ def test_denylist_enabled_without_callback(client: TestClient):
 
 
 def test_load_env_from_outside():
-    DIR = os.path.abspath(os.path.dirname(__file__))
-    private_txt = os.path.join(DIR, "private_key.pem")
-    public_txt = os.path.join(DIR, "public_key.pem")
+    tests_dir = os.path.abspath(os.path.dirname(__file__))
+    private_txt = os.path.join(tests_dir, "private_key.pem")
+    public_txt = os.path.join(tests_dir, "public_key.pem")
 
     with open(private_txt) as f:
         PRIVATE_KEY = f.read().strip()
@@ -129,7 +134,7 @@ def test_load_env_from_outside():
 
     # correct data
     class Settings(BaseSettings):
-        authpaseto_token_location: list = ["headers"]
+        authpaseto_token_location: list[str] = ["headers"]
         authpaseto_secret_key: str = "testing"
         authpaseto_public_key: str = PUBLIC_KEY
         authpaseto_private_key: str = PRIVATE_KEY
@@ -139,10 +144,10 @@ def test_load_env_from_outside():
         authpaseto_encode_issuer: str = "urn:foo"
         authpaseto_decode_issuer: str = "urn:foo"
         authpaseto_decode_audience: str = "urn:foo"
-        authpaseto_denylist_token_checks: Sequence = ["refresh"]
+        authpaseto_denylist_token_checks: Sequence[str] = ["refresh"]
         authpaseto_denylist_enabled: bool = False
         authpaseto_header_name: str = "Auth-Token"
-        authpaseto_header_type: Optional[str] = None
+        authpaseto_header_type: str | None = None
         authpaseto_access_token_expires: timedelta = timedelta(minutes=2)
         authpaseto_refresh_token_expires: timedelta = timedelta(days=5)
 
@@ -173,116 +178,126 @@ def test_load_env_from_outside():
         def invalid_data():
             return "test"
 
+    @AuthPASETO.load_config
+    def get_valid_mapping():
+        return {
+            "authpaseto_secret_key": "mapping-secret",
+            "authpaseto_token_location": ["headers"],
+        }
+
+    assert AuthPASETO._secret_key == "mapping-secret"
+    assert AuthPASETO._token_location == ["headers"]
+
     with pytest.raises(ValidationError, match=r"authpaseto_token_location"):
 
         @AuthPASETO.load_config
         def get_invalid_token_location_type():
-            return [("authpaseto_token_location", 1)]
+            return {"authpaseto_token_location": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_token_location"):
 
         @AuthPASETO.load_config
         def get_invalid_token_location_value():
-            return [("authpaseto_token_location", {"header"})]
+            return {"authpaseto_token_location": {"header"}}
 
     with pytest.raises(ValidationError, match=r"authpaseto_secret_key"):
 
         @AuthPASETO.load_config
         def get_invalid_secret_key():
-            return [("authpaseto_secret_key", 123)]
+            return {"authpaseto_secret_key": 123}
 
     with pytest.raises(ValidationError, match=r"authpaseto_public_key"):
 
         @AuthPASETO.load_config
         def get_invalid_public_key():
-            return [("authpaseto_public_key", 123)]
+            return {"authpaseto_public_key": 123}
 
     with pytest.raises(ValidationError, match=r"authpaseto_private_key"):
 
         @AuthPASETO.load_config
         def get_invalid_private_key():
-            return [("authpaseto_private_key", 123)]
+            return {"authpaseto_private_key": 123}
 
     with pytest.raises(ValidationError, match=r"authpaseto_purpose"):
 
         @AuthPASETO.load_config
         def get_invalid_purpose():
-            return [("authpaseto_purpose", 123)]
+            return {"authpaseto_purpose": 123}
 
     with pytest.raises(ValidationError, match=r"authpaseto_decode_leeway"):
 
         @AuthPASETO.load_config
         def get_invalid_decode_leeway():
-            return [("authpaseto_decode_leeway", "test")]
+            return {"authpaseto_decode_leeway": "test"}
 
     with pytest.raises(ValidationError, match=r"authpaseto_encode_issuer"):
 
         @AuthPASETO.load_config
         def get_invalid_encode_issuer():
-            return [("authpaseto_encode_issuer", 1)]
+            return {"authpaseto_encode_issuer": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_decode_issuer"):
 
         @AuthPASETO.load_config
         def get_invalid_decode_issuer():
-            return [("authpaseto_decode_issuer", 1)]
+            return {"authpaseto_decode_issuer": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_decode_audience"):
 
         @AuthPASETO.load_config
         def get_invalid_decode_audience():
-            return [("authpaseto_decode_audience", 1)]
+            return {"authpaseto_decode_audience": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_denylist_enabled"):
 
         @AuthPASETO.load_config
         def get_invalid_denylist():
-            return [("authpaseto_denylist_enabled", "test")]
+            return {"authpaseto_denylist_enabled": "test"}
 
     with pytest.raises(ValidationError, match=r"authpaseto_denylist_token_checks"):
 
         @AuthPASETO.load_config
         def get_invalid_denylist_token_checks():
-            return [("authpaseto_denylist_token_checks", "string")]
+            return {"authpaseto_denylist_token_checks": "string"}
 
     with pytest.raises(ValidationError, match=r"authpaseto_denylist_token_checks"):
 
         @AuthPASETO.load_config
         def get_invalid_denylist_str_token_check():
-            return [("authpaseto_denylist_token_checks", ["access", "refreshh"])]
+            return {"authpaseto_denylist_token_checks": ["access", "refreshh"]}
 
     with pytest.raises(ValidationError, match=r"authpaseto_header_name"):
 
         @AuthPASETO.load_config
         def get_invalid_header_name():
-            return [("authpaseto_header_name", 1)]
+            return {"authpaseto_header_name": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_header_type"):
 
         @AuthPASETO.load_config
         def get_invalid_header_type():
-            return [("authpaseto_header_type", 1)]
+            return {"authpaseto_header_type": 1}
 
     with pytest.raises(ValidationError, match=r"authpaseto_access_token_expires"):
 
         @AuthPASETO.load_config
         def get_invalid_access_token():
-            return [("authpaseto_access_token_expires", "lol")]
+            return {"authpaseto_access_token_expires": "lol"}
 
     with pytest.raises(ValidationError, match=r"authpaseto_access_token_expires"):
 
         @AuthPASETO.load_config
         def get_access_token_true_value():
-            return [("authpaseto_access_token_expires", True)]
+            return {"authpaseto_access_token_expires": True}
 
     with pytest.raises(ValidationError, match=r"authpaseto_refresh_token_expires"):
 
         @AuthPASETO.load_config
         def get_invalid_refresh_token():
-            return [("authpaseto_refresh_token_expires", "lol")]
+            return {"authpaseto_refresh_token_expires": "lol"}
 
     with pytest.raises(ValidationError, match=r"authpaseto_refresh_token_expires"):
 
         @AuthPASETO.load_config
         def get_refresh_token_true_value():
-            return [("authpaseto_refresh_token_expires", True)]
+            return {"authpaseto_refresh_token_expires": True}
