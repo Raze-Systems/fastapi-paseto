@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-mkdocs serve -a 0.0.0.0:5000
+uv run mkdocs serve -a 0.0.0.0:5000

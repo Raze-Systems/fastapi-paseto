@@ -17,23 +17,23 @@ If not, you can always press F1 and manually click "Remote-Containers: Open Fold
 
 Any development dependencies will be automatically installed.
 
-You might need to select the correct python interpreter after opening it in container, as VS Code defaults to using the system-wide interpreter, rather than the one set up by Pipenv.
+You might need to select the correct Python interpreter after opening the project in the container.
 
-### Flit
+### uv
 
-You can use `flit` to install the development dependencies that tests require to run:
+This repository uses <a href="https://docs.astral.sh/uv/" target="_blank">uv</a> for local development. To create the local environment with the optional dependencies used for tests, docs, and examples, run:
 
 ```bash
-$ flit install --deps develop --symlink
+$ uv sync --extra test --extra doc --extra dev
 ```
 
-It will install all the dependencies and your local FastAPI JWT Auth in your local environment.
+This will create a local `.venv/`, install the project in editable mode, and install the optional dependencies declared in `pyproject.toml`. The repo also includes a `.python-version` file so `uv` will prefer Python 3.10 for local development.
 
 **Using your local FastAPI PASETO Auth**
 
-If you create a Python file that imports and uses FastAPI PASETO Auth, and run it with the Python from your local environment, it will use your local FastAPI PASETO Auth source code. This is thanks to the --symlink flag in the flit command shown above.
+If you create a Python file that imports and uses FastAPI PASETO Auth, and run it with `uv run` from the project root, it will use your local FastAPI PASETO Auth source code. `uv sync` installs the project as editable by default, so source changes are immediately reflected without reinstalling.
 
-That way, you don't have to "install" your local version to be able to test every change.
+That way, you don't have to reinstall your local version to test every change.
 
 ## Docs
 
@@ -74,5 +74,7 @@ There is a script that you can run locally to test all the code and generate cov
 ```bash
 $ bash scripts/tests.sh
 ```
+
+If you prefer to invoke the tools directly instead of using the helper scripts, use `uv run`, for example `uv run pytest -v` or `uv run mkdocs serve -a 0.0.0.0:5000`.
 
 This command generates a directory `./htmlcov/`, if you open the file `./htmlcov/index.html` in your browser, you can explore interactively the regions of code that are covered by the tests, and notice if there is any region missing.

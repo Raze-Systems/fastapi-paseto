@@ -5,6 +5,7 @@
 env/
 venv/
 ENV/
+.venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__
@@ -15,6 +16,7 @@ env/
 build/
 develop-eggs/
 dist/
+site/
 downloads/
 eggs/
 .eggs/
