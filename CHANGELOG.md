@@ -4,6 +4,20 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.0.1 (2026-03-09)
+
+### Bug Fixes
+
+- **ci**: Keep lockfile in sync
+  ([`fede11a`](https://github.com/Raze-Systems/fastapi-paseto/commit/fede11aea1e65ae50941d6d68a1f463e4352599c))
+
+- **ci**: Remove unsupported semantic-release flag
+  ([`2eb31e8`](https://github.com/Raze-Systems/fastapi-paseto/commit/2eb31e8b89185c49e5305aa31d00ff76cf07afd9))
+
+- **ci**: Use frozen sync after release version bump
+  ([`ff1c48d`](https://github.com/Raze-Systems/fastapi-paseto/commit/ff1c48da5a0fdfc1bb22b60ab08b125481611c11))
+
+
 ## v1.0.0 (2026-03-09)
 
 ### Bug Fixes
