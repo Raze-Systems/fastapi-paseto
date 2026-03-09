@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.1.0 (2026-03-09)
+
+### Features
+
+- **ci**: Add release sbom and provenance
+  ([`48651a2`](https://github.com/Raze-Systems/fastapi-paseto/commit/48651a28c7baacc87da75e62d023112d7c24aaa9))
+
+
 ## v1.0.3 (2026-03-09)
 
 ### Bug Fixes
