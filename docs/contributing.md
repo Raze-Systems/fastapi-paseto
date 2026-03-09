@@ -24,10 +24,10 @@ You might need to select the correct Python interpreter after opening the projec
 This repository uses <a href="https://docs.astral.sh/uv/" target="_blank">uv</a> for local development. To create the local environment with the optional dependencies used for tests, docs, and examples, run:
 
 ```bash
-$ uv sync --extra test --extra doc --extra dev
+$ uv sync --python 3.14 --extra test --extra doc --extra dev
 ```
 
-This will create a local `.venv/`, install the project in editable mode, and install the optional dependencies declared in `pyproject.toml`. The repo also includes a `.python-version` file so `uv` will prefer Python 3.10 for local development.
+This will create a local `.venv/`, install the project in editable mode, and install the optional dependencies declared in `pyproject.toml`. The repo also includes a `.python-version` file so `uv` will prefer Python 3.14 for local development.
 
 **Using your local FastAPI PASETO Auth**
 
@@ -75,6 +75,6 @@ There is a script that you can run locally to test all the code and generate cov
 $ bash scripts/tests.sh
 ```
 
-If you prefer to invoke the tools directly instead of using the helper scripts, use `uv run`, for example `uv run pytest -v` or `uv run mkdocs serve -a 0.0.0.0:5000`.
+If you prefer to invoke the tools directly instead of using the helper scripts, use `uv run`, for example `uv run --python 3.14 pytest -v` or `uv run --python 3.14 mkdocs serve -a 0.0.0.0:5000`.
 
 This command generates a directory `./htmlcov/`, if you open the file `./htmlcov/index.html` in your browser, you can explore interactively the regions of code that are covered by the tests, and notice if there is any region missing.

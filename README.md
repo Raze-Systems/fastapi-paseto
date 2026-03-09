@@ -30,6 +30,8 @@ If you were familiar with flask-jwt-extended or fastapi-jwt-auth this extension 
 ## Installation
 The easiest way to start working with this extension with pip
 
+This project currently targets Python 3.14+.
+
 ```bash
 pip install fastapi-paseto-auth
 ```

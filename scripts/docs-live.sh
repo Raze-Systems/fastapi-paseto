@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-uv run mkdocs serve -a 0.0.0.0:5000
+uv run --python 3.14 mkdocs serve -a 0.0.0.0:5000
