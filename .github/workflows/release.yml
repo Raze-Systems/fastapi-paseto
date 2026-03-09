@@ -110,7 +110,7 @@ jobs:
         if: steps.release-baseline.outputs.ready == 'true' && steps.release-plan.outputs.released == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: uv run --python 3.14 semantic-release version --strict
+        run: uv run --python 3.14 semantic-release version
       - name: Capture release metadata
         if: steps.release-baseline.outputs.ready == 'true' && steps.release-plan.outputs.released == 'true'
         id: release-metadata
