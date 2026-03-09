@@ -2,10 +2,6 @@
   FastAPI PASETO
 </h1>
 
-[![Tests](https://github.com/Raze-Systems/fastapi-paseto/actions/workflows/tests.yml/badge.svg)](https://github.com/Raze-Systems/fastapi-paseto/actions/workflows/tests.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Raze-Systems/fastapi-paseto/badge.svg?branch=master)](https://coveralls.io/github/Raze-Systems/fastapi-paseto?branch=master)
-[![PyPI version](https://badge.fury.io/py/fastapi-paseto.svg)](https://badge.fury.io/py/fastapi-paseto)
-[![Downloads](https://static.pepy.tech/personalized-badge/fastapi-paseto?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/fastapi-paseto)
 ---
 
 **Source Code**: <a href="https://github.com/Raze-Systems/fastapi-paseto" target="_blank">https://github.com/Raze-Systems/fastapi-paseto</a>
