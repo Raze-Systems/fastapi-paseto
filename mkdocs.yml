@@ -48,6 +48,7 @@ nav:
     - Headers Options: configuration/headers.md
     - Denylist Options: configuration/denylist.md
   - API Documentation: api-doc.md
+  - Supply Chain Security: supply-chain-security.md
   - Development - Contributing: contributing.md
   - Release Notes: release-notes.md
 

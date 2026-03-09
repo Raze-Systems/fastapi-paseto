@@ -105,17 +105,19 @@ The release workflow only publishes when validation succeeds:
 - tests must pass
 - `uv build` must pass
 - `uv run --python 3.14 mkdocs build --strict` must pass
+- release SBOM generation must pass
 
 The workflow updates `pyproject.toml`, stamps the package fallback version in
 `src/fastapi_paseto/_version.py`, regenerates `CHANGELOG.md`, creates the Git
-tag and GitHub release, uploads the distributions with Twine, and deploys the
-latest documentation to GitHub Pages.
+tag and GitHub release, uploads the distributions with `SHA256SUMS` and SPDX
+SBOM files, creates GitHub artifact attestations for build provenance and SBOM
+verification, and deploys the latest documentation to GitHub Pages.
 
-This repository currently has release tags through `v0.5.4`, while the project
-metadata is already at `0.6.0`. Before relying on the automated release job,
-create and push a bootstrap tag that matches the current version:
+If release automation is being enabled for the first time on a repository with
+existing versions, create and push a bootstrap tag that matches the current
+version before relying on automated semantic version bumps:
 
 ```bash
-git tag v0.6.0
-git push origin v0.6.0
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```

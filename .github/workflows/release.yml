@@ -31,6 +31,13 @@ jobs:
         run: uv run --python 3.14 mkdocs build --strict
       - name: Build package
         run: uv build
+      - name: Download Syft
+        id: syft
+        uses: anchore/sbom-action/download-syft@v0
+      - name: Generate release integrity artifacts
+        env:
+          SYFT: ${{ steps.syft.outputs.cmd }}
+        run: bash scripts/generate-release-integrity-artifacts.sh dist .release-integrity.env
       - name: Coveralls
         if: github.event_name == 'push'
         env:
@@ -122,6 +129,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      attestations: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -135,6 +144,51 @@ jobs:
         run: uv sync --python 3.14
       - name: Build package
         run: uv build
+      - name: Download Syft
+        id: syft
+        uses: anchore/sbom-action/download-syft@v0
+      - name: Generate release integrity artifacts
+        env:
+          SYFT: ${{ steps.syft.outputs.cmd }}
+        run: bash scripts/generate-release-integrity-artifacts.sh dist .release-integrity.env
+      - name: Load release integrity metadata
+        id: integrity
+        run: |
+          source .release-integrity.env
+          {
+            printf 'wheel=%s\n' "$wheel"
+            printf 'wheel_name=%s\n' "$wheel_name"
+            printf 'wheel_sbom=%s\n' "$wheel_sbom"
+            printf 'wheel_sbom_name=%s\n' "$wheel_sbom_name"
+            printf 'sdist=%s\n' "$sdist"
+            printf 'sdist_name=%s\n' "$sdist_name"
+            printf 'sdist_sbom=%s\n' "$sdist_sbom"
+            printf 'sdist_sbom_name=%s\n' "$sdist_sbom_name"
+            printf 'checksums=%s\n' "$checksums"
+            printf 'checksums_name=%s\n' "$checksums_name"
+          } >> "$GITHUB_OUTPUT"
+      - name: Attest build provenance
+        id: attest-provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            ${{ steps.integrity.outputs.wheel }}
+            ${{ steps.integrity.outputs.sdist }}
+          show-summary: false
+      - name: Attest wheel SBOM
+        id: attest-wheel-sbom
+        uses: actions/attest-sbom@v3
+        with:
+          subject-path: ${{ steps.integrity.outputs.wheel }}
+          sbom-path: ${{ steps.integrity.outputs.wheel_sbom }}
+          show-summary: false
+      - name: Attest source distribution SBOM
+        id: attest-sdist-sbom
+        uses: actions/attest-sbom@v3
+        with:
+          subject-path: ${{ steps.integrity.outputs.sdist }}
+          sbom-path: ${{ steps.integrity.outputs.sdist_sbom }}
+          show-summary: false
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
@@ -144,6 +198,77 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ needs.release.outputs.tag }}" dist/* --clobber
+      - name: Publish verification summary
+        env:
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+          RELEASE_COMMIT_SHA: ${{ needs.release.outputs.commit_sha }}
+          PROVENANCE_URL: ${{ steps.attest-provenance.outputs.attestation-url }}
+          WHEEL_SBOM_URL: ${{ steps.attest-wheel-sbom.outputs.attestation-url }}
+          SDIST_SBOM_URL: ${{ steps.attest-sdist-sbom.outputs.attestation-url }}
+        run: |
+          source .release-integrity.env
+          wheel_sha="$(awk -v file="$wheel_name" '$2 == file { print $1 }' "$checksums")"
+          sdist_sha="$(awk -v file="$sdist_name" '$2 == file { print $1 }' "$checksums")"
+
+          cat > dist/release-verification.md <<EOF
+          <!-- release-verification:start -->
+          ## Verification
+
+          Release commit: \`$RELEASE_COMMIT_SHA\`
+
+          | Artifact | SHA256 | SPDX SBOM | Provenance | SBOM attestation |
+          | --- | --- | --- | --- | --- |
+          | \`$wheel_name\` | \`$wheel_sha\` | \`$wheel_sbom_name\` | [build provenance]($PROVENANCE_URL) | [SBOM attestation]($WHEEL_SBOM_URL) |
+          | \`$sdist_name\` | \`$sdist_sha\` | \`$sdist_sbom_name\` | [build provenance]($PROVENANCE_URL) | [SBOM attestation]($SDIST_SBOM_URL) |
+
+          Release assets also include \`$checksums_name\`, \`$wheel_sbom_name\`, and \`$sdist_sbom_name\`.
+
+          \`\`\`bash
+          gh release verify "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
+          gh release verify-asset "$RELEASE_TAG" "./$wheel_name" --repo "$GITHUB_REPOSITORY"
+          gh release verify-asset "$RELEASE_TAG" "./$sdist_name" --repo "$GITHUB_REPOSITORY"
+          gh attestation verify "./$wheel_name" --repo "$GITHUB_REPOSITORY" --signer-workflow .github/workflows/release.yml
+          gh attestation verify "./$wheel_name" --repo "$GITHUB_REPOSITORY" --signer-workflow .github/workflows/release.yml --predicate-type https://spdx.dev/Document/v2.3
+          \`\`\`
+
+          Install from Git with an immutable ref, not \`master\`. Example:
+
+          \`\`\`bash
+          pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@$RELEASE_TAG"
+          \`\`\`
+
+          \`pip\` and \`uv\` record VCS origin metadata in \`direct_url.json\`, but mutable branch installs cannot be strongly verified after the fact. Prefer a signed tag or commit hash and verify the matching release artifacts.
+          <!-- release-verification:end -->
+          EOF
+
+          cat dist/release-verification.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Update release notes with verification details
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          gh release view "$RELEASE_TAG" --json body --jq .body > dist/release-body.md
+          python - <<'PY'
+          from pathlib import Path
+
+          start_marker = "<!-- release-verification:start -->"
+          end_marker = "<!-- release-verification:end -->"
+          body_path = Path("dist/release-body.md")
+          section = Path("dist/release-verification.md").read_text(encoding="utf-8").strip()
+          body = body_path.read_text(encoding="utf-8").strip()
+
+          if start_marker in body and end_marker in body:
+            prefix, remainder = body.split(start_marker, 1)
+            _, suffix = remainder.split(end_marker, 1)
+            body = prefix.rstrip()
+            suffix = suffix.lstrip()
+            merged = "\n\n".join(part for part in [body, section, suffix] if part)
+          else:
+            merged = "\n\n".join(part for part in [body, section] if part)
+
+          body_path.write_text(f"{merged}\n", encoding="utf-8")
+          PY
+          gh release edit "$RELEASE_TAG" --notes-file dist/release-body.md
 
   build-release-docs:
     if: needs.release.outputs.released == 'true'

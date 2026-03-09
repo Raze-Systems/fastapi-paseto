@@ -69,5 +69,32 @@ latest docs to GitHub Pages.
 The first automated release should start from a bootstrap tag that matches the
 current project version.
 
+## Supply Chain Security
+Each automated release publishes the wheel, source distribution, `SHA256SUMS`,
+and SPDX JSON SBOM files as GitHub Release assets and workflow artifacts. The
+release workflow also creates keyless GitHub artifact attestations for both
+build provenance and SPDX SBOMs.
+
+To verify a release locally with the GitHub CLI:
+
+```bash
+gh release verify vX.Y.Z --repo Raze-Systems/fastapi-paseto
+gh release verify-asset vX.Y.Z ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-Systems/fastapi-paseto
+gh attestation verify ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-Systems/fastapi-paseto --signer-workflow .github/workflows/release.yml
+gh attestation verify ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-Systems/fastapi-paseto --signer-workflow .github/workflows/release.yml --predicate-type https://spdx.dev/Document/v2.3
+```
+
+If you install directly from Git, pin an immutable tag or commit hash instead
+of `master`:
+
+```bash
+pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@vX.Y.Z"
+```
+
+`pip` and `uv` record VCS origin metadata in `direct_url.json`, which helps
+with auditing later, but mutable branch installs cannot be strongly verified
+after the fact. Use a signed commit or tag plus the matching release assets if
+you need a verifiable supply-chain trail.
+
 ## License
 This project is licensed under the terms of the MIT license.
