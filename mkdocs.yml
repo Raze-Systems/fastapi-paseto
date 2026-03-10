@@ -50,6 +50,7 @@ nav:
     - Generate Documentation: advanced-usage/generate-docs.md
   - Configuration Options:
     - General Options: configuration/general.md
+    - Secret Key Management: configuration/secret-management.md
     - HTTP Transport Options: configuration/headers.md
     - Denylist Options: configuration/denylist.md
   - Examples: examples.md

@@ -19,5 +19,6 @@ from example file to the relevant guide.
 | `examples/footer_assertion.py` | Footers and implicit assertions | [Footers and Assertions](advanced-usage/footer-assertion.md) |
 | `examples/overrides.py` | Route-level transport overrides | [Per-route Overrides](advanced-usage/overrides.md) |
 | `examples/validation.py` | Issuer, audience, base64, and custom token types | [Validation and Custom Types](advanced-usage/validation.md) |
+| `examples/secure_secret_management.py` | Secure key generation and retrieval patterns | [Secret Key Management](configuration/secret-management.md) |
 | `examples/generate_doc.py` | Manual OpenAPI customization | [Generate Documentation](advanced-usage/generate-docs.md) |
 | `examples/multiple_files/` | Multi-module application layout | [Bigger Applications](advanced-usage/bigger-app.md) |

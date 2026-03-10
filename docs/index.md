@@ -54,5 +54,6 @@ def get_config():
 - Start with [Basic Usage](usage/basic.md)
 - See [JSON Body Tokens](usage/json.md) for HTTP body transport
 - See [WebSocket Usage](usage/websocket.md) for header and query auth
+- See [Secret Key Management](configuration/secret-management.md) for generation, storage, and rotation guidance
 - See [Examples](examples.md) for the full example catalog
 - See [API Documentation](api-doc.md) for the full callable reference
