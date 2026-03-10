@@ -15,7 +15,11 @@ class User(BaseModel):
 @AuthPASETO.load_config
 def get_config():
     return {
+        # Demo only. Generate a strong local secret and load it from secure
+        # storage in production.
         "authpaseto_secret_key": "secret",
+        # Demo only. Protect private signing keys with a secret manager, TPM, or
+        # another hardened storage layer instead of committing them to source.
         "authpaseto_private_key": """
 -----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIL7pfyWYtZD7fDPDm+W0kWbNo/AdbRrDjjxMOgy2EL1N

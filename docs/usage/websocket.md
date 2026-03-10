@@ -4,6 +4,11 @@ Create a file `websocket.py`:
 {!../examples/websocket.py!}
 ```
 
+The example uses a placeholder `authpaseto_secret_key` only to keep the snippet
+short. For production websocket deployments, retrieve the key from secure
+storage in `load_config()` the same way you would for HTTP endpoints. See
+[Key Management](../advanced-usage/key-management.md).
+
 Websocket endpoints use the same dependency injection pattern as HTTP endpoints:
 
 ```python
@@ -38,7 +43,7 @@ those clients, you can either enable websocket query transport globally:
 @AuthPASETO.load_config
 def get_config():
     return {
-        "authpaseto_secret_key": "secret",
+        "authpaseto_secret_key": "secret",  # Demo only.
         "authpaseto_websocket_token_location": ["query"],
     }
 ```

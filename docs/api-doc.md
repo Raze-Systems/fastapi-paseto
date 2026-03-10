@@ -10,6 +10,9 @@ Registers the callback that loads class-level configuration for `AuthPASETO`.
   `BaseSettings` instance.
 - Keys are normalized to lowercase before validation.
 - The callback runs when the decorator is applied, not lazily per request.
+- In production, this is the right place to fetch `authpaseto_secret_key`,
+  `authpaseto_private_key`, and `authpaseto_public_key` from secure storage
+  before returning the config mapping.
 
 ### `token_in_denylist_loader(callback)`
 

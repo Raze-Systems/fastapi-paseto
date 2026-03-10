@@ -54,8 +54,14 @@ like this:
 ```python
 @AuthPASETO.load_config
 def get_config():
-    return {"authpaseto_secret_key": "secret"}
+    return {"authpaseto_secret_key": "secret"}  # Demo only.
 ```
+
+For production, do not hardcode `authpaseto_secret_key` or private signing
+keys in source code. Generate high-entropy key material and retrieve it from a
+secure store in `load_config()`. See the `Key Management` page in the
+documentation for symmetric secrets, public/private PEM material, TPM-backed
+storage, Fernet-wrapped blobs, Vault, Keycloak, and file-loading tradeoffs.
 
 ## Release Process
 Releases are automated with conventional commits and semantic versioning.

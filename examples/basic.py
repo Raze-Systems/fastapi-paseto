@@ -15,7 +15,11 @@ class User(BaseModel):
 # callback to get your configuration
 @AuthPASETO.load_config
 def get_config():
-    return {"authpaseto_secret_key": "secret"}
+    return {
+        # Demo only. Generate a strong secret and load it from secure storage in
+        # production. See the key-management documentation.
+        "authpaseto_secret_key": "secret"
+    }
 
 
 # exception handler for authpaseto

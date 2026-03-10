@@ -46,6 +46,7 @@ nav:
     - Footers and Assertions: advanced-usage/footer-assertion.md
     - Per-route Overrides: advanced-usage/overrides.md
     - Validation and Custom Types: advanced-usage/validation.md
+    - Key Management: advanced-usage/key-management.md
     - Bigger Applications: advanced-usage/bigger-app.md
     - Generate Documentation: advanced-usage/generate-docs.md
   - Configuration Options:
@@ -59,4 +60,4 @@ nav:
   - Release Notes: release-notes.md
 
 extra_css:
-  - 'css/custom.css'
+  - "css/custom.css"

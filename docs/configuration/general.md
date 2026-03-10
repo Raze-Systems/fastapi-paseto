@@ -5,25 +5,34 @@ defaults, and websocket transport settings used by `AuthPASETO`.
 
 `authpaseto_secret_key`
 :   Secret key used for `local` tokens. Required when `authpaseto_purpose` is
-    `local`. Defaults to `None`.
+    `local`. Treat this as a root secret: anyone with it can mint valid local
+    tokens and decrypt their contents. Retrieve it from secure storage in
+    `load_config()` instead of hardcoding it in source code whenever possible.
+    Defaults to `None`.
 
 `authpaseto_public_key`
-:   Public key used to decode `public` tokens. PEM text is expected. Defaults to
-    `None`.
+:   Public key used to decode `public` tokens. PEM text is expected. It does
+    not require secrecy, but it should still come from an authenticated,
+    rotation-aware source. Defaults to `None`.
 
 `authpaseto_public_key_file`
 :   Path to a PEM file containing the public key. When `authpaseto_public_key`
     is unset, this file is read during config loading and its contents are used
-    instead. Defaults to `None`.
+    instead. This is a fallback for constrained environments where mounted
+    files are the only viable interface. Prefer authenticated secret or
+    configuration distribution when available. Defaults to `None`.
 
 `authpaseto_private_key`
-:   Private key used to encode `public` tokens. PEM text is expected. Defaults
-    to `None`.
+:   Private key used to encode `public` tokens. PEM text is expected. Protect
+    this like any other production signing credential and prefer retrieving it
+    from secure storage in `load_config()`. Defaults to `None`.
 
 `authpaseto_private_key_file`
 :   Path to a PEM file containing the private key. When
     `authpaseto_private_key` is unset, this file is read during config loading
-    and its contents are used instead. Defaults to `None`.
+    and its contents are used instead. File loading has security disadvantages
+    and should be limited to environments where that is the only viable
+    solution. Defaults to `None`.
 
 `authpaseto_purpose`
 :   Default token purpose for newly created tokens. Valid values are `local` and
@@ -81,3 +90,6 @@ defaults, and websocket transport settings used by `AuthPASETO`.
 `authpaseto_websocket_query_type`
 :   Optional query-string prefix required before the token value, similar to a
     `Bearer` header prefix. Defaults to `None`.
+
+For detailed guidance on generating, storing, rotating, and retrieving all of
+this key material, see [Key Management](../advanced-usage/key-management.md).

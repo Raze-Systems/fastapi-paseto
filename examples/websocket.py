@@ -17,7 +17,11 @@ class User(BaseModel):
 def get_config():
     """Return the application auth configuration."""
 
-    return {"authpaseto_secret_key": "secret"}
+    return {
+        # Demo only. Generate a strong secret and load it from secure storage in
+        # production. See the key-management documentation.
+        "authpaseto_secret_key": "secret"
+    }
 
 
 @app.exception_handler(AuthPASETOException)

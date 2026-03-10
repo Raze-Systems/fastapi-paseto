@@ -4,6 +4,10 @@ Create a file `basic.py`:
 {!../examples/basic.py!}
 ```
 
+The inline `"secret"` in this demo is only a placeholder for the smallest
+possible example. In production, generate a high-entropy key and retrieve it
+from secure storage inside `load_config()`. See [Key Management](../advanced-usage/key-management.md).
+
 Run the server with:
 
 ```bash
