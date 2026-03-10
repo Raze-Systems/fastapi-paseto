@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.3.1 (2026-03-10)
+
+### Bug Fixes
+
+- **docs**: Document secure paseto key management
+  ([`1f4c50b`](https://github.com/Raze-Systems/fastapi-paseto/commit/1f4c50bc9eb0677df5f5adac6cce8a3d8af58841))
+
+
 ## v1.3.0 (2026-03-10)
 
 ### Documentation
