@@ -1,7 +1,10 @@
-The fresh tokens pattern is built into this extension. This pattern is very simple, you can choose to mark some access tokens as fresh and other as a non-fresh tokens, and use the **paseto_required(fresh=True)** function to only allows fresh tokens to access the certain endpoint.
+The fresh-token pattern is built into this extension. You can mark some access
+tokens as fresh, mark others as non-fresh, and protect a route with
+`paseto_required(fresh=True)` so that only fresh access tokens may use it.
 
-This is useful for allowing the fresh tokens to do some critical things (such as update user information), as you need to login using your user credentials again to get a fresh token.\
-Utilizing Fresh tokens in conjunction with refresh tokens can lead to a more secure site, without creating a bad user experience by making users constantly re-authenticate.
+This is useful for higher-risk actions such as changing account information.
+Combining fresh-token checks with refresh tokens lets you reduce frequent
+password prompts while still requiring a recent login for sensitive operations.
 
 Here is an example of how you could utilize refresh tokens with the fresh token pattern:
 

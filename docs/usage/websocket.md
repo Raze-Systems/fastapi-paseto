@@ -16,9 +16,9 @@ async def websocket_header(
     await websocket.accept()
 ```
 
-The important rule is to call **paseto_required()** before `accept()`. If auth fails,
-the handshake is rejected with websocket close code `1008` and the auth error message
-is used as the close reason.
+The important rule is to call `paseto_required()` before `accept()`. If auth
+fails, the handshake is rejected with websocket close code `1008` and the auth
+error message is used as the close reason.
 
 ## Header Authorization
 
@@ -54,8 +54,8 @@ The default query parameter is `token`, and you can customize it with
 
 ## Parity and Limits
 
-- `optional=True`, `fresh=True`, `refresh_token=True`, custom `type`, denylist checks,
-  issuer validation, audience validation, base64 decoding, and `token=` overrides all
-  work the same way for websocket handlers.
+- `optional=True`, `fresh=True`, `refresh_token=True`, custom `type`,
+  denylist checks, issuer validation, audience validation, base64 decoding,
+  and `token=` overrides all work the same way for websocket handlers.
 - JSON body token transport is not supported for websocket handshakes, because there is
   no request body available before the connection is accepted.

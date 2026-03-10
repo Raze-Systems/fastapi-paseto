@@ -1,7 +1,11 @@
 `authpaseto_denylist_enabled`
-:   Enable/disable token revoking. Defaults to `False`
+:   Enables token revocation checks. Defaults to `False`.
 
 `authpaseto_denylist_token_checks`
-:   What token types to check against the denylist. The options are `access` or `refresh`.
-    You can pass in a sequence to check more than one type. Defaults to `{'access', 'refresh'}`.
-    Only used if deny listing is enabled. 
+:   Token types that should be checked against the denylist callback. Valid
+    values are `access` and `refresh`. Pass a sequence to check both. Defaults
+    to `("access", "refresh")`.
+
+When denylist support is enabled, register a callback with
+`@AuthPASETO.token_in_denylist_loader`. That callback receives the decoded token
+payload and should return `True` when the token has been revoked.

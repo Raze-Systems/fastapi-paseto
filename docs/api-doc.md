@@ -1,107 +1,122 @@
-In here you will find the API for everything exposed in this extension.
+This page documents the public `AuthPASETO` API and its related helpers.
 
-### Configuring FastAPI PASETO
+## Configuration Decorators
 
-**load_config**(callback):
-    This decorator sets the callback function to overwrite state on AuthPASETO class so
-    when you initialize an instance in dependency injection default value will be overwritten.
+### `load_config(callback)`
 
-    The callback must be a function that returns either a plain mapping
-    (`dict[str, object]`) or a `pydantic-settings` `BaseSettings` instance.
----
-**token_in_denylist_loader**(callback):
-    This decorator sets the callback function that will be called when
-    a protected endpoint is accessed and will check if the PASETO has
-    been revoked. By default, this callback is not used.
+Registers the callback that loads class-level configuration for `AuthPASETO`.
 
-    The callback must be a function that takes `one` argument, which is the decoded PASETO (python dictionary),
-    and returns `True` if the token has been revoked, or `False` otherwise.
+- The callback must return either a plain mapping or a `pydantic-settings`
+  `BaseSettings` instance.
+- Keys are normalized to lowercase before validation.
+- The callback runs when the decorator is applied, not lazily per request.
 
-#
-### Protected Endpoint
+### `token_in_denylist_loader(callback)`
 
-**paseto_required**(optional: bool = False, fresh: bool = False, refresh_token: bool = False, type: str = access, base64_encoded: bool = False, location = None, token_key = None, token_prefix = None, token = None):
+Registers the callback used to decide whether a decoded token has been revoked.
 
-    If you call this function, it will ensure that the requester has a valid access token before
-    executing the code below your router. Depending on set options, it might not raise an exception even if the check fails.*
+- The callback receives the decoded token payload as `dict[str, object]`.
+- Return `True` to reject the token, or `False` to allow it.
+- This callback is only consulted when `authpaseto_denylist_enabled=True`.
 
-    * Parameters:
-        **optional**: Defines whether the check should continue even if no PASETO is found.\
-                      (An exception will still always be raised if an invalid one is found.)
-        **fresh**: If set to True, requires any PASETO found to be a fresh access token.
-        **refresh_token**: If set to True, checks for a refresh token instead of an access token.
-        **type**: If set to a string, this gets checked against the type of the token provided. Used for custom types other than access or refresh tokens.
-        **base64_encoded**: Whether the token to check is base64 encoded.
-        **location**: Override the configured token location for this endpoint. HTTP supports `headers` and `json`; websocket handlers support `headers` and `query`.
-        **token_key**: Override the configured header name, JSON key, or websocket query key for this check.
-        **token_prefix**: Override the configured transport prefix such as `Bearer`.
-        **token**: Provide a raw token directly and bypass request/websocket transport lookup.
-    * Returns: None
+## Request Validation
 
-    For websocket handlers, call **paseto_required()** before `accept()`. Auth failures close
-    the connection with websocket close code `1008` and use the auth error message as the close reason.
+### `paseto_required(optional=False, fresh=False, refresh_token=False, type=None, base64_encoded=False, location=None, token_key=None, token_prefix=None, token=None)`
 
+Validates the current request or websocket connection against the supplied token
+requirements.
 
+Parameters:
 
-### Utilities
+- `optional`: allow the route to continue when no token is present or when the
+  token cannot be decoded.
+- `fresh`: require a fresh access token.
+- `refresh_token`: require a refresh token instead of an access token.
+- `type`: require a custom token type produced by `create_token()`.
+- `base64_encoded`: decode the token from base64 before PASETO validation.
+- `location`: override the configured token source. HTTP supports `headers` and
+  `json`; websocket handlers support `headers` and `query`.
+- `token_key`: override the configured header name, JSON key, or websocket query
+  key for this check.
+- `token_prefix`: override the configured token prefix with another non-empty
+  string for this check.
+- `token`: provide a raw token directly and bypass request or websocket lookup.
 
-**create_access_token** (subject, fresh=False, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
+Notes:
 
-    *Create a new access token.*
+- `fresh=True` and `refresh_token=True` cannot be used together.
+- `optional=True` does not suppress type mismatches, freshness failures, or
+  denylist failures after a token decodes successfully.
+- On websocket handlers, call `paseto_required()` before `accept()`. Auth
+  failures are converted to websocket close code `1008`.
 
-    * Parameters:
-        **subject**: Identifier for who this token is for example id or username from database
-        **fresh**: Identify if token is fresh or non-fresh
-        **purpose**: Purpose for the PASETO
-        **expires_time**: Set the duration of the PASETO
-        **audience**: Expected audience in the PASETO
-        **user_claims**: Custom claims to include in this token. This data must be dictionary
-        **base64_encode**: If true the created token will be base64 encoded. This is useful for if you need to pass the token somewhere where special characters might cause issues.
-    * Returns: An encoded access token
+## Token Creation
 
-**create_refresh_token**(subject, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
+### `create_access_token(subject, fresh=False, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
 
-    *Creates a new refresh token.*
+Creates a new access token.
 
-    * Parameters:
-        **subject**: Identifier for who this token is for example id or username from database
-        **purpose**: Purpose for the PASETO
-        **expires_time**: Set the duration of the PASETO
-        **audience**: Expected audience in the PASETO
-        **user_claims**: Custom claims to include in this token. This data must be dictionary
-        **base64_encode**: If true the created token will be base64 encoded. This is useful for if you need to pass the token somewhere where special characters might cause issues.
-    * Returns: An encoded refresh token
+- `subject`: string or integer identifier stored in the `sub` claim.
+- `fresh`: whether the token should be marked as fresh.
+- `purpose`: override the configured `local` or `public` purpose.
+- `expires_time`: override the configured expiration with integer seconds,
+  `datetime`, `timedelta`, or `False`.
+- `audience`: string or sequence of audience values added to `aud`.
+- `user_claims`: additional claims merged into the payload.
+- `base64_encode`: base64-encode the generated token string before returning it.
 
-**create_token**(subject, type, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode: bool = False):
+Returns a token string.
 
-    *Creates a new refresh token.*
+### `create_refresh_token(subject, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
 
-    * Parameters:
-        **subject**: Identifier for who this token is for example id or username from database
-        **type**: Type of the token to be created
-        **purpose**: Purpose for the PASETO
-        **expires_time**: Set the duration of the PASETO
-        **audience**: Expected audience in the PASETO
-        **user_claims**: Custom claims to include in this token. This data must be dictionary
-        **base64_encode**: If true the created token will be base64 encoded. This is useful for if you need to pass the token somewhere where special characters might cause issues.
-    * Returns: An encoded refresh token
+Creates a new refresh token.
 
-**get_token_payload**():
+Parameters are the same as `create_access_token()`, except refresh tokens do not
+accept a `fresh` flag.
 
-    *This will return the python dictionary which has all of the claims of the PASETO that is accessing the endpoint.
-    If no PASETO is currently present, return `None` instead.*
+Returns a token string.
 
-    * Parameters: None
-    * Returns: Dictionary that contains the claims of PASETO
+### `create_token(subject, type, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
 
-**get_jti**():
+Creates a custom token with the caller-provided `type` claim.
 
-    *Returns the JTI (unique identifier) of an the PASETO that is accessing the endpoint*
+- `type`: custom token type string that can later be required with
+  `paseto_required(type="...")`.
 
-    * Parameters: None
-    * Returns: String of JTI
+Returns a token string.
 
-**get_subject**():
+## Request-Scoped Helpers
 
-    *This will return the subject of the PASETO that is accessing the endpoint.
-    If no PASETO is present, `None` is returned instead.*
+### `get_token_payload()`
+
+Returns the decoded token payload for the current request or websocket
+connection, or `None` if no token has been validated successfully.
+
+### `get_jti()`
+
+Returns the current token identifier from the `jti` claim, or `None` if no
+token has been validated successfully.
+
+### `get_paseto_subject()`
+
+Returns the current token subject by reading the decoded payload directly, or
+`None` if no token has been validated successfully.
+
+### `get_subject()`
+
+Returns the cached subject captured during the last successful
+`paseto_required()` call, or `None` otherwise.
+
+In normal request handling, `get_subject()` and `get_paseto_subject()` return
+the same value after successful validation.
+
+## Helper Dependency
+
+### `get_request_json()`
+
+The `fastapi_paseto.auth_paseto` module also exposes `get_request_json()` as a
+dependency helper.
+
+- For HTTP requests it returns the parsed JSON body, or `{}` when the body is
+  empty or invalid JSON.
+- For websocket connections it always returns `{}`.

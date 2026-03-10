@@ -33,6 +33,7 @@ nav:
   - About: index.md
   - Usage:
     - Basic Usage: usage/basic.md
+    - JSON Body Tokens: usage/json.md
     - WebSocket Usage: usage/websocket.md
     - Partially Protecting: usage/optional.md
     - Refresh Tokens: usage/refresh.md
@@ -42,12 +43,15 @@ nav:
     - Additional claims: advanced-usage/additional-claims.md
     - Token Expire Time: advanced-usage/expiry_time.md
     - Token Purpose: advanced-usage/purpose.md
+    - Per-route Overrides: advanced-usage/overrides.md
+    - Validation and Custom Types: advanced-usage/validation.md
     - Bigger Applications: advanced-usage/bigger-app.md
     - Generate Documentation: advanced-usage/generate-docs.md
   - Configuration Options:
     - General Options: configuration/general.md
-    - Headers Options: configuration/headers.md
+    - HTTP Transport Options: configuration/headers.md
     - Denylist Options: configuration/denylist.md
+  - Examples: examples.md
   - API Documentation: api-doc.md
   - Supply Chain Security: supply-chain-security.md
   - Development - Contributing: contributing.md

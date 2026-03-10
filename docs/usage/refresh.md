@@ -1,11 +1,20 @@
-These are long-lived tokens which can be used to create a new access tokens once an old access token has expired. Refresh tokens cannot access an endpoint that is protected with **paseto_required()**, and access tokens cannot access an endpoint that is protected with **paseto_required(refresh_token=True)**.
+Refresh tokens are long-lived tokens that can be exchanged for new access
+tokens after an access token expires.
 
-Access tokens are marked as fresh if they were generated from the user authenticating with their user credentials, rather than a refresh token. This increases the chance of the authenticating entity actually being the user, rather than an attacker that stole a refresh token.
+Refresh tokens cannot access an endpoint protected with `paseto_required()`, and
+access tokens cannot access an endpoint protected with
+`paseto_required(refresh_token=True)`.
 
-By utilizing refresh tokens we can reduce the damage that can be done if an access tokens is stolen. However, if an attacker gets ahold of a refresh token they can keep generating new access tokens and access protected endpoints as though they were that user. We can help combat this by using the fresh tokens pattern, discussed in the next section.
+Access tokens are marked as fresh when they were created from an explicit
+credential check instead of from a refresh flow. This gives you a way to reserve
+high-risk operations for recently authenticated users.
 
-For accessing **/refresh** endpoint remember to change the token you send in a request from an **access_token** to a **refresh_token**
-    `Authorization: Bearer <refresh_token>`
+When calling a refresh endpoint, send the refresh token instead of the access
+token:
+
+```text
+Authorization: Bearer <refresh_token>
+```
 
 Here is an example of using access and refresh tokens:
 

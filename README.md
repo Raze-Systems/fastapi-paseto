@@ -10,10 +10,12 @@
 
 ---
 
-FastAPI extension that provides PASETO (**P**lastform-**A**gnostic **SE**curity **TO**kens) Auth support\
-PASETO are a simpler, yet more secure alternative to JWTs.
+FastAPI extension that provides PASETO (**P**latform-**A**gnostic **SE**curity **TO**kens) Auth support.
+PASETO tokens are a simpler, yet more secure alternative to JWTs.
 
-If you were familiar with flask-jwt-extended or fastapi-jwt-auth this extension suitable for you, as this is forked from fastapi-jwt-auth which in turn used flask-jwt-extended as motivation
+If you are familiar with `flask-jwt-extended` or `fastapi-jwt-auth`, this
+extension should feel familiar. It is forked from `fastapi-jwt-auth`, which in
+turn was inspired by `flask-jwt-extended`.
 
 ## Features
 - Access tokens and refresh tokens
@@ -25,12 +27,18 @@ If you were familiar with flask-jwt-extended or fastapi-jwt-auth this extension 
 - Custom token types
 
 ## Installation
-The easiest way to start working with this extension with pip
+
+This project is not published on PyPI. Install it from an immutable Git tag or
+commit hash instead.
 
 This project currently targets Python 3.14+.
 
 ```bash
-pip install fastapi-paseto
+uv add "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@vX.Y.Z"
+```
+
+```bash
+pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@vX.Y.Z"
 ```
 
 Releases are built from GitHub Actions after a successful semantic release on
@@ -47,12 +55,6 @@ like this:
 def get_config():
     return {"authpaseto_secret_key": "secret"}
 ```
-
-## FAQ
-- **Where's support for tokens in cookies?**\
-This project focuses on header-based PASETO authentication and only includes the features required for that workflow.\
-Cookie storage is intentionally out of scope for now because it adds a large amount of behavior that does not fit the current design.\
-If there is strong demand and a solid implementation, contributions adding cookie support can still be considered.
 
 ## Release Process
 Releases are automated with conventional commits and semantic versioning.
@@ -82,11 +84,14 @@ gh attestation verify ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-System
 gh attestation verify ./fastapi_paseto-X.Y.Z-py3-none-any.whl --repo Raze-Systems/fastapi-paseto --signer-workflow .github/workflows/release.yml --predicate-type https://spdx.dev/Document/v2.3
 ```
 
-If you install directly from Git, pin an immutable tag or commit hash instead
-of `main`:
+If you prefer to install from a commit hash instead of a release tag:
 
 ```bash
-pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@vX.Y.Z"
+uv add "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@<commit-sha>"
+```
+
+```bash
+pip install "fastapi-paseto @ git+https://github.com/Raze-Systems/fastapi-paseto.git@<commit-sha>"
 ```
 
 `pip` and `uv` record VCS origin metadata in `direct_url.json`, which helps

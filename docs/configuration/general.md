@@ -1,45 +1,82 @@
+These options control the cryptographic keys, claim validation rules, token
+defaults, and websocket transport settings used by `AuthPASETO`.
+
+## Keys and Token Format
+
 `authpaseto_secret_key`
-:   The secret key needed for symmetric based signing algorithms, such as `HS*`. Defaults to `None`
+:   Secret key used for `local` tokens. Required when `authpaseto_purpose` is
+    `local`. Defaults to `None`.
 
 `authpaseto_public_key`
-:   The public key needed for asymmetric based signing algorithms, such as `RS*` or `EC*`. PEM format expected.
-    Defaults to `None`
+:   Public key used to decode `public` tokens. PEM text is expected. Defaults to
+    `None`.
+
+`authpaseto_public_key_file`
+:   Path to a PEM file containing the public key. When `authpaseto_public_key`
+    is unset, this file is read during config loading and its contents are used
+    instead. Defaults to `None`.
 
 `authpaseto_private_key`
-:   The private key needed for asymmetric based signing algorithms, such as `RS*` or `EC*`. PEM format expected.
-    Defaults to `None`
+:   Private key used to encode `public` tokens. PEM text is expected. Defaults
+    to `None`.
+
+`authpaseto_private_key_file`
+:   Path to a PEM file containing the private key. When
+    `authpaseto_private_key` is unset, this file is read during config loading
+    and its contents are used instead. Defaults to `None`.
 
 `authpaseto_purpose`
-:   Which purpose to use for the tokens. Options are `public` for asymmetric, `local` for symmetric. Defaults to `local`
+:   Default token purpose for newly created tokens. Valid values are `local` and
+    `public`. Defaults to `local`.
+
+`authpaseto_version`
+:   PASETO version used when creating new tokens. Defaults to `4`.
+
+## Claim Validation
 
 `authpaseto_decode_leeway`
-:   Define the leeway part of the expiration time definition, which means you can validate an expiration
-    time which is in the past but not very far. Defaults to `0`
+:   Leeway applied when decoding an expired token. Accepts an integer number of
+    seconds or a `datetime.timedelta`. Defaults to `0`.
 
 `authpaseto_encode_issuer`
-:   Define the issuer to set the issuer in PASETO claims, only access token have issuer claim. Defaults to `None`
+:   Issuer value automatically added by `create_access_token()`. Defaults to
+    `None`.
 
 `authpaseto_decode_issuer`
-:   Define the issuer to check the issuer in PASETO claims, only access token have issuer claim. Defaults to `None`
+:   Expected `iss` claim value when decoding a token. If this is set, every
+    decoded token must contain the matching issuer. Defaults to `None`.
 
 `authpaseto_decode_audience`
-:   The audience or list of audiences you expect in a PASETO when decoding it. Defaults to `None`
+:   Expected audience when decoding a token. Accepts a string or sequence of
+    strings. The empty string disables audience validation. Defaults to `""`.
+
+## Token Lifetimes
 
 `authpaseto_access_token_expires`
-:   How long an access token should live before it expires. This takes value `integer` *(seconds)* or
-    `datetime.timedelta`, and defaults to **15 minutes**. Can be set to `False` to disable expiration.
+:   Default lifetime for access tokens. Accepts integer seconds,
+    `datetime.timedelta`, or `False` to disable expiration. Defaults to
+    **15 minutes**.
 
 `authpaseto_refresh_token_expires`
-:   How long an refresh token should live before it expires. This takes value `integer` *(seconds)* or
-    `datetime.timedelta`, and defaults to **30 days**. Can be set to `False` to disable expiration.
+:   Default lifetime for refresh tokens. Accepts integer seconds,
+    `datetime.timedelta`, or `False` to disable expiration. Defaults to
+    **30 days**.
+
+`authpaseto_other_token_expires`
+:   Default lifetime for custom tokens created with `create_token()`. Accepts
+    integer seconds, `datetime.timedelta`, or `False` to disable expiration.
+    Defaults to **30 days**.
+
+## WebSocket Transport
 
 `authpaseto_websocket_token_location`
-:   Where websocket handlers should look for tokens during the handshake. Valid values are
-    `headers` and `query`. Defaults to `("headers",)`.
+:   Where websocket handlers look for tokens during the handshake. Valid values
+    are `headers` and `query`. Defaults to `("headers",)`.
 
 `authpaseto_websocket_query_key`
-:   The query parameter name used when websocket query transport is enabled. Defaults to `token`.
+:   Query-string key used when websocket query transport is enabled. Defaults to
+    `token`.
 
 `authpaseto_websocket_query_type`
-:   Optional prefix to require in the websocket query parameter, similar to `authpaseto_header_type`.
-    Defaults to `None`.
+:   Optional query-string prefix required before the token value, similar to a
+    `Bearer` header prefix. Defaults to `None`.
