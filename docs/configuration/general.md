@@ -39,8 +39,9 @@ defaults, and websocket transport settings used by `AuthPASETO`.
     seconds or a `datetime.timedelta`. Defaults to `0`.
 
 `authpaseto_encode_issuer`
-:   Issuer value automatically added by `create_access_token()`. Defaults to
-    `None`.
+:   Default issuer value automatically added by `create_access_token()`.
+    Refresh and custom tokens can set `iss` explicitly with `issuer=`.
+    Defaults to `None`.
 
 `authpaseto_decode_issuer`
 :   Expected `iss` claim value when decoding a token. If this is set, every

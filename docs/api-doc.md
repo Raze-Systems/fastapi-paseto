@@ -21,7 +21,7 @@ Registers the callback used to decide whether a decoded token has been revoked.
 
 ## Request Validation
 
-### `paseto_required(optional=False, fresh=False, refresh_token=False, type=None, base64_encoded=False, location=None, token_key=None, token_prefix=None, token=None)`
+### `paseto_required(optional=False, fresh=False, refresh_token=False, type=None, base64_encoded=False, location=None, token_key=None, token_prefix=None, token=None, implicit_assertion=b"")`
 
 Validates the current request or websocket connection against the supplied token
 requirements.
@@ -41,6 +41,8 @@ Parameters:
 - `token_prefix`: override the configured token prefix with another non-empty
   string for this check.
 - `token`: provide a raw token directly and bypass request or websocket lookup.
+- `implicit_assertion`: require the same implicit assertion that was used when
+  the token was created.
 
 Notes:
 
@@ -52,7 +54,7 @@ Notes:
 
 ## Token Creation
 
-### `create_access_token(subject, fresh=False, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
+### `create_access_token(subject, fresh=False, purpose=None, expires_time=None, audience=None, issuer=None, user_claims=None, footer=None, implicit_assertion=b"", base64_encode=False)`
 
 Creates a new access token.
 
@@ -62,21 +64,25 @@ Creates a new access token.
 - `expires_time`: override the configured expiration with integer seconds,
   `datetime`, `timedelta`, or `False`.
 - `audience`: string or sequence of audience values added to `aud`.
-- `user_claims`: additional claims merged into the payload.
+- `issuer`: override the `iss` claim for this token. If omitted, access tokens
+  fall back to `authpaseto_encode_issuer`.
+- `user_claims`: additional non-reserved claims merged into the payload.
+- `footer`: optional PASETO footer as bytes, string, or dictionary.
+- `implicit_assertion`: optional implicit assertion bound to the token.
 - `base64_encode`: base64-encode the generated token string before returning it.
 
 Returns a token string.
 
-### `create_refresh_token(subject, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
+### `create_refresh_token(subject, purpose=None, expires_time=None, audience=None, issuer=None, user_claims=None, footer=None, implicit_assertion=b"", base64_encode=False)`
 
 Creates a new refresh token.
 
 Parameters are the same as `create_access_token()`, except refresh tokens do not
-accept a `fresh` flag.
+accept a `fresh` flag and do not inherit `authpaseto_encode_issuer`.
 
 Returns a token string.
 
-### `create_token(subject, type, purpose=None, expires_time=None, audience=None, user_claims=None, base64_encode=False)`
+### `create_token(subject, type, purpose=None, expires_time=None, audience=None, issuer=None, user_claims=None, footer=None, implicit_assertion=b"", base64_encode=False)`
 
 Creates a custom token with the caller-provided `type` claim.
 
@@ -91,6 +97,11 @@ Returns a token string.
 
 Returns the decoded token payload for the current request or websocket
 connection, or `None` if no token has been validated successfully.
+
+### `get_token_footer()`
+
+Returns the decoded footer for the current request or websocket connection, or
+`None` if no token has been validated successfully or the token has no footer.
 
 ### `get_jti()`
 

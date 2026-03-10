@@ -12,11 +12,17 @@ def denylist() -> set[str]:
     return set()
 
 
-@pytest.fixture(scope="function")
-def client(configure_auth, denylist):
+def build_client(
+    configure_auth,
+    denylist: set[str],
+    *,
+    token_checks: list[str] | tuple[str, ...] = ("access", "refresh"),
+) -> TestClient:
+    """Build a client with configurable denylist token-type checks."""
+
     configure_auth(
         authpaseto_denylist_enabled=True,
-        authpaseto_denylist_token_checks=["access", "refresh"],
+        authpaseto_denylist_token_checks=token_checks,
     )
 
     @AuthPASETO.token_in_denylist_loader
@@ -62,8 +68,12 @@ def client(configure_auth, denylist):
         Authorize.paseto_required(refresh_token=True)
         return {"jti": Authorize.get_jti()}
 
-    client = TestClient(app)
-    return client
+    return TestClient(app)
+
+
+@pytest.fixture(scope="function")
+def client(configure_auth, denylist):
+    return build_client(configure_auth, denylist)
 
 
 @pytest.fixture(scope="function")
@@ -138,3 +148,44 @@ def test_denylisted_refresh_token(client, denylisted_refresh_token):
     )
     assert response.status_code == 401
     assert response.json() == {"detail": "Token has been revoked"}
+
+
+def test_refresh_only_denylist_checks_skip_access_tokens(
+    configure_auth,
+    denylist: set[str],
+    Authorize: AuthPASETO,
+):
+    client = build_client(configure_auth, denylist, token_checks=["refresh"])
+    token = Authorize.create_access_token(subject="test", fresh=True)
+
+    response = client.get("/get-jti", headers={"Authorization": f"Bearer {token}"})
+    denylist.add(response.json()["jti"])
+
+    protected_response = client.get(
+        "/paseto-required",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert protected_response.status_code == 200
+    assert protected_response.json() == {"hello": "world"}
+
+
+def test_refresh_only_denylist_checks_still_revoke_refresh_tokens(
+    configure_auth,
+    denylist: set[str],
+    Authorize: AuthPASETO,
+):
+    client = build_client(configure_auth, denylist, token_checks=["refresh"])
+    token = Authorize.create_refresh_token(subject="test")
+
+    response = client.get(
+        "/get-refresh-jti",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    denylist.add(response.json()["jti"])
+
+    revoked_response = client.get(
+        "/paseto-refresh-required",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert revoked_response.status_code == 401
+    assert revoked_response.json() == {"detail": "Token has been revoked"}

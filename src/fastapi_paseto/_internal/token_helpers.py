@@ -19,6 +19,11 @@ from fastapi_paseto.exceptions import (
 TokenAudience = str | Sequence[str]
 ExpiryValue = timedelta | datetime | int | bool | None
 PurposeProcess = str
+TokenFooter = bytes | str | dict[str, object] | None
+
+_RESERVED_CLAIMS: frozenset[str] = frozenset(
+    {"aud", "exp", "fresh", "iat", "iss", "jti", "nbf", "sub", "type"}
+)
 
 
 def generate_token_identifier() -> str:
@@ -59,9 +64,12 @@ def validate_token_creation_arguments(
     subject: str | int,
     fresh: bool | None,
     audience: TokenAudience,
+    issuer: str | None,
     purpose: str | None,
     version: int | None,
     user_claims: dict[str, object] | None,
+    footer: TokenFooter,
+    implicit_assertion: bytes | str,
 ) -> None:
     """Validate user-supplied inputs before generating a token."""
 
@@ -71,12 +79,44 @@ def validate_token_creation_arguments(
         raise TypeError("Fresh must be a boolean")
     if audience and not isinstance(audience, (str, list, tuple, set, frozenset)):
         raise TypeError("audience must be a string or sequence")
+    if issuer is not None and not isinstance(issuer, str):
+        raise TypeError("issuer must be a string")
     if purpose and not isinstance(purpose, str):
         raise TypeError("purpose must be a string")
     if version and not isinstance(version, int):
         raise TypeError("version must be an integer")
     if user_claims and not isinstance(user_claims, dict):
         raise TypeError("User claims must be a dictionary")
+    validate_user_claims(user_claims)
+    validate_footer(footer)
+    validate_implicit_assertion(implicit_assertion)
+
+
+def validate_user_claims(user_claims: dict[str, object] | None) -> None:
+    """Reject collisions between custom claims and reserved top-level claims."""
+
+    if not user_claims:
+        return
+
+    if reserved_claims := sorted(_RESERVED_CLAIMS.intersection(user_claims)):
+        raise ValueError(
+            "user_claims cannot include reserved claims: "
+            + ", ".join(reserved_claims)
+        )
+
+
+def validate_footer(footer: TokenFooter) -> None:
+    """Ensure footer values use types supported by ``pyseto``."""
+
+    if footer is not None and not isinstance(footer, (bytes, str, dict)):
+        raise TypeError("footer must be bytes, str, or dict")
+
+
+def validate_implicit_assertion(implicit_assertion: bytes | str) -> None:
+    """Ensure implicit assertions use types supported by ``pyseto``."""
+
+    if not isinstance(implicit_assertion, (bytes, str)):
+        raise TypeError("implicit_assertion must be bytes or str")
 
 
 def validate_required_token_flags(fresh: bool, refresh_token: bool) -> None:
@@ -220,7 +260,7 @@ def split_token_parts(token: str) -> list[str]:
     """Split a token into its dot-separated parts."""
 
     parts = token.split(".")
-    if len(parts) != 3:
+    if len(parts) not in {3, 4}:
         raise PASETODecodeError(status_code=422, message="Invalid PASETO format")
     return parts
 

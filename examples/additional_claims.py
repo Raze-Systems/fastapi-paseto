@@ -27,8 +27,8 @@ def login(user: User, Authorize: AuthPASETO = Depends()):
     if user.username != "test" or user.password != "test":
         raise HTTPException(status_code=401, detail="Bad username or password")
 
-    # You can be passing custom claim to argument user_claims
-    # in function create_access_token() or create_refresh_token()
+    # user_claims is for application-specific claims only. Reserved top-level
+    # claims such as sub, exp, iss, aud, and jti have dedicated parameters.
     extra_claims = {"foo": ["fiz", "baz"]}
     access_token = Authorize.create_access_token(
         subject=user.username, user_claims=extra_claims

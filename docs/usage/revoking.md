@@ -5,6 +5,10 @@ Choose which token types should be checked with
 `token_in_denylist_loader()`. That callback receives the decoded token payload
 and should return `True` when the token has been revoked.
 
+Only the configured token types are checked. For example, if you set
+`authpaseto_denylist_token_checks=["refresh"]`, access tokens skip denylist
+lookups while refresh tokens still enforce them.
+
 This can be utilized to invalidate token in multiple cases, e.g.:
 - A user logs out and their currently active tokens need to be invalidated
 - You detect a replay attack and the leaked tokens need to be blocked

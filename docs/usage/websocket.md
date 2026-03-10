@@ -56,6 +56,7 @@ The default query parameter is `token`, and you can customize it with
 
 - `optional=True`, `fresh=True`, `refresh_token=True`, custom `type`,
   denylist checks, issuer validation, audience validation, base64 decoding,
-  and `token=` overrides all work the same way for websocket handlers.
+  footers, implicit assertions, and `token=` overrides all work the same way
+  for websocket handlers.
 - JSON body token transport is not supported for websocket handshakes, because there is
   no request body available before the connection is accepted.

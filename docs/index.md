@@ -17,6 +17,7 @@ token-creation flow should feel familiar.
 - JSON body token transport for HTTP routes
 - Custom claims and custom token types
 - Base64-encoded token support
+- PASETO footers and implicit assertions
 
 ## Installation
 

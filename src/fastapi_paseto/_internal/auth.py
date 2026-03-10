@@ -39,6 +39,7 @@ from .token_helpers import (
     resolve_expiry_seconds,
     resolve_secret_key,
     split_token_parts,
+    validate_implicit_assertion,
     validate_required_token_flags,
     validate_token_creation_arguments,
     validate_token_type,
@@ -171,6 +172,8 @@ class AuthPASETO(AuthConfig):
         audience: str | Sequence[str] = "",
         user_claims: dict[str, object] | None = None,
         version: int | None = None,
+        footer: bytes | str | dict[str, object] | None = None,
+        implicit_assertion: bytes | str = b"",
         base64_encode: bool = False,
     ) -> str:
         """Create and return an encoded PASETO string."""
@@ -179,9 +182,12 @@ class AuthPASETO(AuthConfig):
             subject=subject,
             fresh=fresh,
             audience=audience,
+            issuer=issuer,
             purpose=purpose,
             version=version,
             user_claims=user_claims,
+            footer=footer,
+            implicit_assertion=implicit_assertion,
         )
         user_claims = user_claims or {}
         issuer = issuer or self._encode_issuer
@@ -199,7 +205,13 @@ class AuthPASETO(AuthConfig):
         secret_key = self._get_secret_key(purpose, "encode")
         paseto = Paseto.new(exp=exp_seconds, include_iat=True)
         encoding_key = Key.new(version=version, purpose=purpose, key=secret_key)
-        token = paseto.encode(encoding_key, claims, serializer=json)
+        token = paseto.encode(
+            encoding_key,
+            claims,
+            footer=footer or b"",
+            implicit_assertion=implicit_assertion,
+            serializer=json,
+        )
         if base64_encode:
             token = base64.b64encode(token)
         return token.decode("utf-8")
@@ -213,6 +225,9 @@ class AuthPASETO(AuthConfig):
         """Raise if the decoded token has been revoked via the configured callback."""
 
         if not self._denylist_enabled:
+            return
+        payload_type = payload.get("type")
+        if payload_type not in self._denylist_token_checks:
             return
         if not self._has_token_in_denylist_callback():
             raise RuntimeError(
@@ -245,7 +260,10 @@ class AuthPASETO(AuthConfig):
         purpose: str | None = None,
         expires_time: timedelta | datetime | int | bool | None = None,
         audience: str | Sequence[str] | None = None,
+        issuer: str | None = None,
         user_claims: dict[str, object] | None = None,
+        footer: bytes | str | dict[str, object] | None = None,
+        implicit_assertion: bytes | str = b"",
         base64_encode: bool = False,
     ) -> str:
         """Create a new access token."""
@@ -258,7 +276,9 @@ class AuthPASETO(AuthConfig):
             purpose=purpose,
             audience=audience,
             user_claims=user_claims,
-            issuer=self._encode_issuer,
+            issuer=issuer or self._encode_issuer,
+            footer=footer,
+            implicit_assertion=implicit_assertion,
             base64_encode=base64_encode,
         )
 
@@ -268,7 +288,10 @@ class AuthPASETO(AuthConfig):
         purpose: str | None = None,
         expires_time: timedelta | datetime | int | bool | None = None,
         audience: str | Sequence[str] | None = None,
+        issuer: str | None = None,
         user_claims: dict[str, object] | None = None,
+        footer: bytes | str | dict[str, object] | None = None,
+        implicit_assertion: bytes | str = b"",
         base64_encode: bool = False,
     ) -> str:
         """Create a new refresh token."""
@@ -279,7 +302,10 @@ class AuthPASETO(AuthConfig):
             exp_seconds=self._get_expiry_seconds("refresh", expires_time),
             purpose=purpose,
             audience=audience,
+            issuer=issuer,
             user_claims=user_claims,
+            footer=footer,
+            implicit_assertion=implicit_assertion,
             base64_encode=base64_encode,
         )
 
@@ -290,7 +316,10 @@ class AuthPASETO(AuthConfig):
         purpose: str | None = None,
         expires_time: timedelta | datetime | int | bool | None = None,
         audience: str | Sequence[str] | None = None,
+        issuer: str | None = None,
         user_claims: dict[str, object] | None = None,
+        footer: bytes | str | dict[str, object] | None = None,
+        implicit_assertion: bytes | str = b"",
         base64_encode: bool = False,
     ) -> str:
         """Create a token with a caller-provided custom type."""
@@ -301,7 +330,10 @@ class AuthPASETO(AuthConfig):
             exp_seconds=self._get_expiry_seconds(type, expires_time),
             purpose=purpose,
             audience=audience,
+            issuer=issuer,
             user_claims=user_claims,
+            footer=footer,
+            implicit_assertion=implicit_assertion,
             base64_encode=base64_encode,
         )
 
@@ -323,12 +355,17 @@ class AuthPASETO(AuthConfig):
         self._token_parts = split_token_parts(self._token)
         return self._token_parts
 
-    def _decode_token(self, base64_encoded: bool = False) -> Token:
+    def _decode_token(
+        self,
+        base64_encoded: bool = False,
+        implicit_assertion: bytes | str = b"",
+    ) -> Token:
         """Decode and validate the current token."""
 
         if base64_encoded:
             self._token = decode_base64_token(self._token)
 
+        validate_implicit_assertion(implicit_assertion)
         purpose = self._get_token_purpose()
         version = self._get_token_version()
         secret_key = self._get_secret_key(purpose=purpose, process="decode")
@@ -339,6 +376,7 @@ class AuthPASETO(AuthConfig):
             token = paseto.decode(
                 keys=decoding_key,
                 token=self._token,
+                implicit_assertion=implicit_assertion,
                 deserializer=json,
                 aud=self._decode_audience,
             )
@@ -369,6 +407,17 @@ class AuthPASETO(AuthConfig):
         if self._decoded_token:
             return self._decoded_token.payload
         return None
+
+    def get_token_footer(self) -> bytes | str | dict[str, object] | None:
+        """Return the decoded token footer for the current request if present."""
+
+        if self._decoded_token is None:
+            return None
+
+        footer = self._decoded_token.footer
+        if footer in (b"", ""):
+            return None
+        return footer
 
     def get_jti(self) -> str | None:
         """Return the current token identifier if present."""
@@ -402,6 +451,7 @@ class AuthPASETO(AuthConfig):
         token_key: str | None = None,
         token_prefix: str | None = None,
         token: str | bool | None = None,
+        implicit_assertion: bytes | str = b"",
     ) -> None:
         """Validate the current request token against the endpoint requirements."""
 
@@ -426,7 +476,10 @@ class AuthPASETO(AuthConfig):
                 )
 
             try:
-                self._decode_token(base64_encoded=base64_encoded)
+                self._decode_token(
+                    base64_encoded=base64_encoded,
+                    implicit_assertion=implicit_assertion,
+                )
             except PASETODecodeError as err:
                 if optional:
                     return None

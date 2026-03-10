@@ -43,6 +43,7 @@ nav:
     - Additional claims: advanced-usage/additional-claims.md
     - Token Expire Time: advanced-usage/expiry_time.md
     - Token Purpose: advanced-usage/purpose.md
+    - Footers and Assertions: advanced-usage/footer-assertion.md
     - Per-route Overrides: advanced-usage/overrides.md
     - Validation and Custom Types: advanced-usage/validation.md
     - Bigger Applications: advanced-usage/bigger-app.md

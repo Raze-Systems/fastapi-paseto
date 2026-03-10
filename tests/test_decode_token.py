@@ -77,14 +77,6 @@ def encoded_token(default_access_token):
     return pyseto.encode(key, default_access_token).decode("utf-8")
 
 
-def make_expiring_claim(seconds_from_now: int) -> str:
-    """Return an ISO timestamp offset from the current UTC time."""
-
-    return (
-        datetime.now(tz=timezone.utc) + timedelta(seconds=seconds_from_now)
-    ).isoformat(timespec="seconds")
-
-
 def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO):
     class SettingsOne(BaseSettings):
         AUTHPASETO_SECRET_KEY: str = "secret-key"
@@ -105,11 +97,17 @@ def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO
     assert response.status_code == 422
     assert response.json() == {"detail": "Failed to decrypt."}
     # ExpiredSignatureError
-    token = Authorize.create_access_token(
-        subject="test",
-        expires_time=False,
-        user_claims={"exp": make_expiring_claim(-3)},
-    )
+    token = pyseto.encode(
+        Key.new(4, "local", "secret-key"),
+        {
+            "sub": "test",
+            "type": "access",
+            "fresh": False,
+            "exp": (
+                datetime.now(tz=timezone.utc) - timedelta(seconds=3)
+            ).isoformat(timespec="seconds"),
+        },
+    ).decode("utf-8")
     response = client.get("/protected", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 422
     assert response.json() == {"detail": "Token expired."}
@@ -125,16 +123,26 @@ def test_verified_token(client: TestClient, encoded_token, Authorize: AuthPASETO
         return SettingsTwo()
 
     access_token = Authorize.create_access_token(subject="test")
-    refresh_token = Authorize.create_refresh_token(
-        subject="test",
-        expires_time=False,
-        user_claims={"exp": make_expiring_claim(-1)},
-    )
-    access_token = Authorize.create_access_token(
-        subject="test",
-        expires_time=False,
-        user_claims={"exp": make_expiring_claim(-1)},
-    )
+    expired_claim = (
+        datetime.now(tz=timezone.utc) - timedelta(seconds=1)
+    ).isoformat(timespec="seconds")
+    refresh_token = pyseto.encode(
+        Key.new(4, "local", "secret-key"),
+        {
+            "sub": "test",
+            "type": "refresh",
+            "exp": expired_claim,
+        },
+    ).decode("utf-8")
+    access_token = pyseto.encode(
+        Key.new(4, "local", "secret-key"),
+        {
+            "sub": "test",
+            "type": "access",
+            "fresh": False,
+            "exp": expired_claim,
+        },
+    ).decode("utf-8")
     # PASETO payload is now expired
     # But with some leeway, it will still validate
     response = client.get(

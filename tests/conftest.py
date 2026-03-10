@@ -1,5 +1,6 @@
 from copy import deepcopy
 from datetime import timedelta
+from pathlib import Path
 
 import pytest
 
@@ -78,3 +79,14 @@ def configure_auth():
             return settings
 
     return _configure
+
+
+@pytest.fixture(scope="session")
+def key_material() -> dict[str, str]:
+    """Return the test PEM fixtures used for public-token coverage."""
+
+    tests_dir = Path(__file__).parent
+    return {
+        "private": (tests_dir / "private_key.pem").read_text().strip(),
+        "public": (tests_dir / "public_key.pem").read_text().strip(),
+    }

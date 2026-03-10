@@ -50,7 +50,7 @@ def login(user: User, Authorize: AuthPASETO = Depends()):
         subject=user.username,
         type="email-verify",
         audience=AUDIENCE,
-        user_claims={"iss": ISSUER},
+        issuer=ISSUER,
     )
     return {
         "access_token": access_token,

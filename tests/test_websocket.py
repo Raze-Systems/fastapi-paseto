@@ -105,6 +105,31 @@ def make_client(
             await websocket.send_json({"subject": Authorize.get_subject()})
             await websocket.close()
 
+        @app.websocket("/footer")
+        async def footer_route(
+            websocket: WebSocket,
+            Authorize: AuthPASETO = Depends(),
+        ) -> None:
+            Authorize.paseto_required()
+            await websocket.accept()
+            await websocket.send_json(
+                {
+                    "footer": Authorize.get_token_footer(),
+                    "subject": Authorize.get_subject(),
+                }
+            )
+            await websocket.close()
+
+        @app.websocket("/implicit")
+        async def implicit_route(
+            websocket: WebSocket,
+            Authorize: AuthPASETO = Depends(),
+        ) -> None:
+            Authorize.paseto_required(implicit_assertion="channel-binding")
+            await websocket.accept()
+            await websocket.send_json({"subject": Authorize.get_subject()})
+            await websocket.close()
+
         @app.websocket("/query")
         async def query_route(
             websocket: WebSocket,
@@ -348,6 +373,55 @@ def test_websocket_base64(
     assert exc.reason == "Invalid base64 encoding"
 
 
+def test_websocket_footer_round_trip(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+) -> None:
+    client = make_client()
+    token = Authorize.create_access_token(
+        subject="footer-user",
+        footer={"kid": "k4.lid.example"},
+    )
+
+    with client.websocket_connect(
+        "/footer",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as websocket:
+        message = websocket.receive_json()
+
+    assert message == {
+        "footer": {"kid": "k4.lid.example"},
+        "subject": "footer-user",
+    }
+
+
+def test_websocket_implicit_assertion(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+) -> None:
+    client = make_client()
+    token = Authorize.create_access_token(
+        subject="asserted-user",
+        implicit_assertion="channel-binding",
+    )
+
+    with client.websocket_connect(
+        "/implicit",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as websocket:
+        message = websocket.receive_json()
+
+    assert message == {"subject": "asserted-user"}
+
+    exc = expect_disconnect(
+        client,
+        "/required",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert exc.code == 1008
+    assert exc.reason == "Failed to decrypt."
+
+
 def test_websocket_query_transport_default_and_override(
     make_client: Callable[..., TestClient],
     Authorize: AuthPASETO,
@@ -406,12 +480,12 @@ def test_websocket_issuer_and_audience_validation(
     valid_token = Authorize.create_access_token(
         subject="test",
         audience=["urn:expected"],
-        user_claims={"iss": "urn:expected"},
+        issuer="urn:expected",
     )
     invalid_audience = Authorize.create_access_token(
         subject="test",
         audience=["urn:other"],
-        user_claims={"iss": "urn:expected"},
+        issuer="urn:expected",
     )
 
     with client.websocket_connect(
@@ -450,6 +524,52 @@ def test_websocket_denylisted_token(
     exc = expect_disconnect(
         client,
         "/required",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert exc.code == 1008
+    assert exc.reason == "Token has been revoked"
+
+
+def test_websocket_denylist_checks_skip_access_tokens_when_refresh_only(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+    denylist: set[str],
+) -> None:
+    client = make_client(
+        authpaseto_denylist_enabled=True,
+        authpaseto_denylist_token_checks=["refresh"],
+    )
+    token = Authorize.create_access_token(subject="test")
+    Authorize._token = token
+    jti = Authorize._decode_token().payload["jti"]
+    denylist.add(jti)
+
+    with client.websocket_connect(
+        "/required",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as websocket:
+        message = websocket.receive_json()
+
+    assert message["subject"] == "test"
+
+
+def test_websocket_denylist_checks_apply_to_refresh_tokens_when_refresh_only(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+    denylist: set[str],
+) -> None:
+    client = make_client(
+        authpaseto_denylist_enabled=True,
+        authpaseto_denylist_token_checks=["refresh"],
+    )
+    token = Authorize.create_refresh_token(subject="test")
+    Authorize._token = token
+    jti = Authorize._decode_token().payload["jti"]
+    denylist.add(jti)
+
+    exc = expect_disconnect(
+        client,
+        "/refresh",
         headers={"Authorization": f"Bearer {token}"},
     )
     assert exc.code == 1008

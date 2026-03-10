@@ -25,6 +25,7 @@ turn was inspired by `flask-jwt-extended`.
 - Support for adding custom claims to Tokens
 - Built-in Base64 Encoding of Tokens
 - Custom token types
+- PASETO footers and implicit assertions
 
 ## Installation
 

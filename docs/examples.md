@@ -16,6 +16,7 @@ from example file to the relevant guide.
 | `examples/denylist_redis.py` | Redis-backed denylist storage | [Revoking Tokens](usage/revoking.md) |
 | `examples/additional_claims.py` | Custom claims in token payloads | [Additional claims](advanced-usage/additional-claims.md) |
 | `examples/purpose.py` | Local vs public token purpose | [Token Purpose](advanced-usage/purpose.md) |
+| `examples/footer_assertion.py` | Footers and implicit assertions | [Footers and Assertions](advanced-usage/footer-assertion.md) |
 | `examples/overrides.py` | Route-level transport overrides | [Per-route Overrides](advanced-usage/overrides.md) |
 | `examples/validation.py` | Issuer, audience, base64, and custom token types | [Validation and Custom Types](advanced-usage/validation.md) |
 | `examples/generate_doc.py` | Manual OpenAPI customization | [Generate Documentation](advanced-usage/generate-docs.md) |
