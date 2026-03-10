@@ -4,6 +4,19 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.3.0 (2026-03-10)
+
+### Documentation
+
+- **docs**: Align documentation with current implementation
+  ([`d5a0705`](https://github.com/Raze-Systems/fastapi-paseto/commit/d5a0705d9ae2468770b0995870bd077d46946101))
+
+### Features
+
+- **auth**: Align paseto support with footer and assertion features
+  ([`3d3cf84`](https://github.com/Raze-Systems/fastapi-paseto/commit/3d3cf84328416e3a8f581437f87d50e9fe241a85))
+
+
 ## v1.2.2 (2026-03-10)
 
 ### Bug Fixes
