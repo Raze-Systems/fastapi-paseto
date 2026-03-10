@@ -4,6 +4,14 @@ This file is generated from conventional commits by semantic-release.
 
 <!-- version list -->
 
+## v1.2.2 (2026-03-10)
+
+### Bug Fixes
+
+- **auth**: Isolate request state and harden token parsing
+  ([`d8d82c4`](https://github.com/Raze-Systems/fastapi-paseto/commit/d8d82c443571f2149862563f13e6442b88c65534))
+
+
 ## v1.2.1 (2026-03-09)
 
 ### Bug Fixes
