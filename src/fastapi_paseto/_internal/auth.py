@@ -57,12 +57,22 @@ class AuthPASETO(AuthConfig):
     ) -> None:
         """Capture request-scoped objects used by token extraction helpers."""
 
+        self._token: str | None = None
+        self._token_parts: list[str] = []
+        self._current_user: str | int | None = None
+        self._decoded_token: Token | None = None
         self._request_json = request_json
         self._response = response
-        if request is not None:
-            self._request = request
-        if websocket is not None:
-            self._websocket = websocket
+        self._request = request
+        self._websocket = websocket
+
+    def _reset_runtime_state(self) -> None:
+        """Clear request-scoped authentication state."""
+
+        self._token = None
+        self._token_parts = []
+        self._current_user = None
+        self._decoded_token = None
 
     def _get_paseto_from_json(
         self,
@@ -106,8 +116,10 @@ class AuthPASETO(AuthConfig):
     def _get_connection(self) -> Request | WebSocket:
         """Return the current request or websocket connection."""
 
-        if hasattr(self, "_websocket"):
+        if self._websocket is not None:
             return self._websocket
+        if self._request is None:  # pragma: no cover
+            raise RuntimeError("Request or websocket connection is required")
         return self._request
 
     def _get_connection_headers(self) -> Mapping[str, str]:
@@ -123,7 +135,7 @@ class AuthPASETO(AuthConfig):
     def _is_websocket_connection(self) -> bool:
         """Return whether the current dependency context is a websocket."""
 
-        return hasattr(self, "_websocket")
+        return self._websocket is not None
 
     def _get_paseto_identifier(self) -> str:
         """Return a new unique token identifier."""
@@ -393,6 +405,7 @@ class AuthPASETO(AuthConfig):
     ) -> None:
         """Validate the current request token against the endpoint requirements."""
 
+        self._reset_runtime_state()
         try:
             validate_required_token_flags(fresh=fresh, refresh_token=refresh_token)
             if token:

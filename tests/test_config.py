@@ -27,11 +27,13 @@ def client():
 
 
 def test_default_config():
-    assert AuthPASETO._token is None
+    authorize = AuthPASETO()
+
+    assert authorize._token is None
     assert AuthPASETO._token_location == ("headers",)
     assert AuthPASETO._websocket_token_location == ("headers",)
-    assert AuthPASETO._current_user is None
-    assert AuthPASETO._decoded_token is None
+    assert authorize._current_user is None
+    assert authorize._decoded_token is None
     assert AuthPASETO._secret_key is None
     assert AuthPASETO._public_key is None
     assert AuthPASETO._private_key is None

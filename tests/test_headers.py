@@ -60,6 +60,26 @@ def test_header_invalid_paseto(client):
     assert response.json() == {"detail": "Invalid PASETO format"}
 
 
+def test_header_requires_exact_bearer_scheme(client, Authorize):
+    token = Authorize.create_access_token(subject="test")
+
+    invalid_scheme_response = client.get(
+        "/protected",
+        headers={"Authorization": f"NotBearer {token}"},
+    )
+    assert invalid_scheme_response.status_code == 422
+    assert invalid_scheme_response.json() == {
+        "detail": "Bad Authorization header. Expected value 'Bearer <PASETO>'"
+    }
+
+    lowercase_scheme_response = client.get(
+        "/protected",
+        headers={"Authorization": f"bearer {token}"},
+    )
+    assert lowercase_scheme_response.status_code == 200
+    assert lowercase_scheme_response.json() == {"hello": "world"}
+
+
 def test_valid_header(client, Authorize):
     token = Authorize.create_access_token(subject="test")
     response = client.get("/protected", headers={"Authorization": f"Bearer {token}"})

@@ -203,6 +203,51 @@ def test_websocket_optional_without_token(make_client: Callable[..., TestClient]
     assert message == {"payload": None, "subject": None}
 
 
+def test_websocket_optional_does_not_leak_previous_subject(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+) -> None:
+    client = make_client()
+    token = Authorize.create_access_token(subject="test")
+
+    with client.websocket_connect(
+        "/required",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as websocket:
+        message = websocket.receive_json()
+
+    assert message["subject"] == "test"
+
+    with client.websocket_connect("/optional") as websocket:
+        optional_message = websocket.receive_json()
+
+    assert optional_message == {"payload": None, "subject": None}
+
+
+def test_websocket_optional_invalid_token_does_not_leak_previous_subject(
+    make_client: Callable[..., TestClient],
+    Authorize: AuthPASETO,
+) -> None:
+    client = make_client()
+    token = Authorize.create_access_token(subject="test")
+
+    with client.websocket_connect(
+        "/required",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as websocket:
+        message = websocket.receive_json()
+
+    assert message["subject"] == "test"
+
+    with client.websocket_connect(
+        "/optional",
+        headers={"Authorization": "Bearer invalid"},
+    ) as websocket:
+        optional_message = websocket.receive_json()
+
+    assert optional_message == {"payload": None, "subject": None}
+
+
 def test_websocket_refresh_required(
     make_client: Callable[..., TestClient],
     Authorize: AuthPASETO,

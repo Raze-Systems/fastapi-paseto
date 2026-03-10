@@ -92,6 +92,41 @@ def test_paseto_optional(client, Authorize):
     assert response.json() == {"hello": "world"}
 
 
+def test_paseto_optional_does_not_leak_previous_subject(client, Authorize):
+    url = "/paseto-optional"
+    token = Authorize.create_access_token(subject="test")
+
+    authorized_response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert authorized_response.status_code == 200
+    assert authorized_response.json() == {"hello": "world"}
+
+    anonymous_response = client.get(url)
+    assert anonymous_response.status_code == 200
+    assert anonymous_response.json() == {"hello": "anonym"}
+
+
+def test_paseto_optional_invalid_token_does_not_leak_previous_subject(client, Authorize):
+    url = "/paseto-optional"
+    token = Authorize.create_access_token(subject="test")
+
+    authorized_response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert authorized_response.status_code == 200
+    assert authorized_response.json() == {"hello": "world"}
+
+    invalid_response = client.get(
+        url,
+        headers={"Authorization": "Bearer invalid"},
+    )
+    assert invalid_response.status_code == 200
+    assert invalid_response.json() == {"hello": "anonym"}
+
+
 def test_refresh_required(client, Authorize):
     url = "/paseto-refresh-required"
     # only refresh token allowed

@@ -60,6 +60,35 @@ def test_invalid_json_token(client):
     assert response.json() == {"detail": "Invalid PASETO format"}
 
 
+@pytest.mark.parametrize(
+    ("payload", "detail"),
+    [
+        (
+            {"access_token": 123},
+            "Bad access_token header. Expected value 'Bearer <PASETO>'",
+        ),
+        (
+            {"access_token": ""},
+            "Bad access_token header. Expected value 'Bearer <PASETO>'",
+        ),
+        (
+            {"access_token": "Bearer"},
+            "Bad access_token header. Expected value 'Bearer <PASETO>'",
+        ),
+        (
+            {"access_token": "Bearer token extra"},
+            "Bad access_token header. Expected value 'Bearer <PASETO>'",
+        ),
+    ],
+)
+def test_malformed_json_token_returns_auth_error(client, configure_auth, payload, detail):
+    configure_auth(authpaseto_json_type="Bearer")
+
+    response = client.request("GET", "/protected_json", json=payload)
+    assert response.status_code == 422
+    assert response.json() == {"detail": detail}
+
+
 def test_wrong_location(client, access_token):
     class SettingsOne(BaseSettings):
         authpaseto_token_location: list[str] = ["headers"]

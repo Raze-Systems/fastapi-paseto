@@ -1,11 +1,10 @@
-"""Shared mutable configuration state for ``AuthPASETO``."""
+"""Shared configuration state for ``AuthPASETO``."""
 
 from collections.abc import Callable, Mapping
 from datetime import timedelta
 
 from pydantic import ValidationError
 from pydantic_settings import BaseSettings
-from pyseto import Token
 
 from fastapi_paseto.config import LoadConfig
 
@@ -37,13 +36,8 @@ _CONFIG_ATTRIBUTE_MAP: tuple[tuple[str, str], ...] = (
 
 class AuthConfig:
     """Hold class-level configuration shared by all ``AuthPASETO`` instances."""
-
-    _token: str | None = None
-    _token_parts: list[str] = []
     _token_location: list[str] | tuple[str, ...] = ("headers",)
     _websocket_token_location: list[str] | tuple[str, ...] = ("headers",)
-    _current_user: str | int | None = None
-    _decoded_token: Token | None = None
 
     _secret_key: str | None = None
     _public_key: str | None = None

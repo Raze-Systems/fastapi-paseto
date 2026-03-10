@@ -7,6 +7,14 @@ from fastapi import Request, WebSocket
 from fastapi_paseto.exceptions import InvalidHeaderError
 
 
+def _build_token_error_message(token_key: str, token_type: str | None) -> str:
+    """Return the error message for a malformed token-bearing field."""
+
+    if token_type:
+        return f"Bad {token_key} header. Expected value '{token_type} <PASETO>'"
+    return f"Bad {token_key} header. Expected value '<PASETO>'"
+
+
 async def get_request_json(
     request: Request = None,
     websocket: WebSocket = None,
@@ -35,21 +43,27 @@ def extract_token_from_json(
         return None
 
     token = request_json[json_key]
+    if not isinstance(token, str):
+        raise InvalidHeaderError(
+            status_code=422,
+            message=_build_token_error_message(json_key, json_type),
+        )
+
     if not json_type:
         if not token:
             raise InvalidHeaderError(
                 status_code=422,
-                message=f"Bad {json_key} header. Excepted value 'Bearer <PASETO>'",
+                message=_build_token_error_message(json_key, json_type),
             )
         return token
 
-    token_prefix, token = token.split()
-    if not token or token_prefix != json_type:
+    parts = token.split()
+    if len(parts) != 2 or parts[0] != json_type or not parts[1]:
         raise InvalidHeaderError(
             status_code=422,
-            message=f"Bad {json_key} header. Expected value '{json_type} <PASETO>'",
+            message=_build_token_error_message(json_key, json_type),
         )
-    return token
+    return parts[1]
 
 
 def extract_token_from_header(
@@ -67,11 +81,11 @@ def extract_token_from_header(
         if len(parts) != 1:
             raise InvalidHeaderError(
                 status_code=422,
-                message=f"Bad {header_name} header. Excepted value '<PASETO>'",
+                message=f"Bad {header_name} header. Expected value '<PASETO>'",
             )
         return parts[0]
 
-    if not parts[0].__contains__(header_type) or len(parts) != 2:
+    if len(parts) != 2 or parts[0].lower() != header_type.lower() or not parts[1]:
         raise InvalidHeaderError(
             status_code=422,
             message=f"Bad {header_name} header. Expected value '{header_type} <PASETO>'",

@@ -7,12 +7,8 @@ from fastapi_paseto import AuthPASETO
 
 
 _AUTHPASETO_DEFAULTS: dict[str, object] = {
-    "_token": None,
-    "_token_parts": [],
     "_token_location": ("headers",),
     "_websocket_token_location": ("headers",),
-    "_current_user": None,
-    "_decoded_token": None,
     "_secret_key": None,
     "_public_key": None,
     "_private_key": None,
